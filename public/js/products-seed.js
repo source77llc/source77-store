@@ -74,9 +74,8 @@ var SEED_PRODUCTS = [
     weight_lb: 4.5,
     quantity: 10,
     images: [],
-    description: 'Warehouse club multi-pack. Strong, 2-ply. Available without a membership.',
-    shipping: true,
-    source: "Sam's Club"
+    description: 'Strong, 2-ply paper towels. Multi-pack quantity, sold at a great price.',
+    shipping: true
   },
   {
     id: 'p7',
@@ -87,9 +86,8 @@ var SEED_PRODUCTS = [
     weight_lb: 1.2,
     quantity: 8,
     images: [],
-    description: 'Double-wall insulated. Keeps cold 24h, hot 12h. Costco warehouse find.',
-    shipping: true,
-    source: 'Costco'
+    description: 'Double-wall insulated. Keeps cold 24h, hot 12h.',
+    shipping: true
   },
   {
     id: 'p8',
@@ -100,9 +98,8 @@ var SEED_PRODUCTS = [
     weight_lb: 1.1,
     quantity: 20,
     images: [],
-    description: 'Ships direct from US supplier. 500ml tank, 7 LED colors, auto-shutoff.',
-    shipping: true,
-    source: 'AppScenic'
+    description: '500ml tank, 7 LED colors, auto-shutoff. Ships directly to you.',
+    shipping: true
   },
   {
     id: 'p9',
@@ -113,8 +110,7 @@ var SEED_PRODUCTS = [
     weight_lb: 0.5,
     quantity: 30,
     images: [],
-    description: 'Ships direct from US supplier. Works on short and long fur. Easy clean button.',
-    shipping: true,
-    source: 'AppScenic'
+    description: 'Works on short and long fur. Easy clean button. Ships directly to you.',
+    shipping: true
   }
 ];
