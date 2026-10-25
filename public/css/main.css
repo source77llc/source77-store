@@ -1256,3 +1256,24 @@ textarea {
     margin-left: 0;
   }
 }
+
+
+/* ── Fulfillment Badges ────────────────────────────────────── */
+.fulfillment-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  margin-top: 0.4rem;
+}
+.fulfillment-badge.local {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+.fulfillment-badge.direct {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}

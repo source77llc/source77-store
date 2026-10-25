@@ -2,6 +2,10 @@
    Source77 Store — products-seed.js
    Static seed products used when no API backend is configured.
    Exposed as window.SEED_PRODUCTS so shop.js can pick it up.
+
+   fulfillment field (set per item in admin):
+     'local'  → "Local pickup available" — item is in hand
+     'direct' → "Ships directly to you" — ships from fulfillment
    ============================================================ */
 
 var SEED_PRODUCTS = [
@@ -15,7 +19,8 @@ var SEED_PRODUCTS = [
     quantity: 3,
     images: [],
     description: 'Factory brake pads removed during upgrade. Tested, 60% life remaining.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'local'
   },
   {
     id: 'p2',
@@ -27,7 +32,8 @@ var SEED_PRODUCTS = [
     quantity: 5,
     images: [],
     description: 'Set of 3 nesting stainless bowls with lids. Minor packaging damage only.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'local'
   },
   {
     id: 'p3',
@@ -39,7 +45,8 @@ var SEED_PRODUCTS = [
     quantity: 12,
     images: [],
     description: '10 Gbps data, 100W charging. Universal compatibility. Factory sealed.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'local'
   },
   {
     id: 'p4',
@@ -51,7 +58,8 @@ var SEED_PRODUCTS = [
     quantity: 8,
     images: [],
     description: 'Markers, colored pencils, foam sheets, stickers. Great for classrooms.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'local'
   },
   {
     id: 'p5',
@@ -63,54 +71,59 @@ var SEED_PRODUCTS = [
     quantity: 15,
     images: [],
     description: 'Mixed scents. Car and home clips. Individually wrapped.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'local'
   },
   {
     id: 'p6',
     title: 'Bulk Paper Towels – 12 Roll Pack',
-    category: 'Warehouse Deals',
+    category: 'Home Goods',
     condition: 'New',
     price: 19.99,
     weight_lb: 4.5,
     quantity: 10,
     images: [],
     description: 'Strong, 2-ply paper towels. Multi-pack quantity, sold at a great price.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'direct'
   },
   {
     id: 'p7',
     title: 'Stainless Steel Water Bottle 40oz',
-    category: 'Warehouse Deals',
+    category: 'Home Goods',
     condition: 'New',
     price: 22.99,
     weight_lb: 1.2,
     quantity: 8,
     images: [],
     description: 'Double-wall insulated. Keeps cold 24h, hot 12h.',
-    shipping: true
+    shipping: true,
+    fulfillment: 'direct'
   },
   {
     id: 'p8',
     title: 'Aromatherapy Essential Oil Diffuser',
-    category: 'Dropship',
+    category: 'Home Goods',
     condition: 'New',
     price: 34.99,
     weight_lb: 1.1,
     quantity: 20,
     images: [],
-    description: '500ml tank, 7 LED colors, auto-shutoff. Ships directly to you.',
-    shipping: true
+    description: '500ml tank, 7 LED colors, auto-shutoff.',
+    shipping: true,
+    fulfillment: 'direct'
   },
   {
     id: 'p9',
     title: 'Pet Grooming Brush – Self-Cleaning',
-    category: 'Dropship',
+    category: 'General Merchandise',
     condition: 'New',
     price: 18.99,
     weight_lb: 0.5,
     quantity: 30,
     images: [],
-    description: 'Works on short and long fur. Easy clean button. Ships directly to you.',
-    shipping: true
+    description: 'Works on short and long fur. Easy clean button.',
+    shipping: true,
+    fulfillment: 'direct'
   }
 ];

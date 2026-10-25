@@ -40,6 +40,10 @@
 
     var badgeCls = conditionClass(product.condition);
 
+    var fulfillmentHtml = product.fulfillment === 'direct'
+      ? '<span class="fulfillment-badge direct">🚚 Ships directly to you</span>'
+      : '<span class="fulfillment-badge local">📍 Local pickup available</span>';
+
     return (
       '<div class="product-card" data-id="' + escHtml(product.id) + '" role="article">' +
         '<div class="card-image">' + imgHtml + '</div>' +
@@ -47,6 +51,7 @@
           '<div class="card-title">' + escHtml(product.title) + '</div>' +
           '<span class="condition-badge ' + badgeCls + '">' + escHtml(product.condition || 'New') + '</span>' +
           '<div class="card-price">$' + Number(product.price).toFixed(2) + '</div>' +
+          fulfillmentHtml +
         '</div>' +
         '<div class="card-actions">' +
           '<button class="btn btn-primary add-to-cart-btn" ' +
@@ -93,7 +98,7 @@
   }
 
   /* ── Category filter buttons ───────────────────────────── */
-  var CATEGORIES = ['All', 'Car Parts', 'Home Goods', 'Electronics', 'General Merchandise', 'Warehouse Deals', 'Dropship', 'Other'];
+  var CATEGORIES = ['All', 'Car Parts', 'Home Goods', 'Electronics', 'General Merchandise'];
 
   function renderFilters() {
     var filterWrap = document.getElementById('category-filters');

@@ -165,12 +165,13 @@
           '<th>Condition</th>' +
           '<th>Price</th>' +
           '<th>Qty</th>' +
-          '<th>Shipping</th>' +
+          '<th>Fulfillment</th>' +
           '<th>Actions</th>' +
         '</tr></thead>' +
         '<tbody>';
 
     products.forEach(function (p) {
+      var fulfillLabel = p.fulfillment === 'direct' ? '🚚 Ships directly' : '📍 Local pickup';
       html +=
         '<tr data-id="' + escapeHtml(String(p.id)) + '">' +
           '<td>' + escapeHtml(p.title || '') + '</td>' +
@@ -178,7 +179,7 @@
           '<td>' + escapeHtml(p.condition || '') + '</td>' +
           '<td>$' + parseFloat(p.price || 0).toFixed(2) + '</td>' +
           '<td>' + (p.quantity !== undefined ? p.quantity : '') + '</td>' +
-          '<td>' + (p.shipping ? 'Yes' : 'No') + '</td>' +
+          '<td>' + fulfillLabel + '</td>' +
           '<td class="actions">' +
             '<button class="btn-edit" data-id="' + escapeHtml(String(p.id)) + '">Edit</button> ' +
             '<button class="btn-delete" data-id="' + escapeHtml(String(p.id)) + '">Delete</button>' +
@@ -238,6 +239,12 @@
           '<label>Quantity<input type="number" name="quantity" value="' + (p.quantity !== undefined ? p.quantity : '') + '" min="0" step="1" required></label>' +
           '<label>Description<textarea name="description" rows="3">' + escapeHtml(p.description || '') + '</textarea></label>' +
           '<label>Image URL (optional)<input type="url" name="image_url" value="' + escapeHtml(p.image_url || '') + '"></label>' +
+          '<label>Fulfillment' +
+            '<select name="fulfillment">' +
+              '<option value="local"' + ((!p.fulfillment || p.fulfillment === 'local') ? ' selected' : '') + '>📍 Local pickup available (item in hand)</option>' +
+              '<option value="direct"' + (p.fulfillment === 'direct' ? ' selected' : '') + '>🚚 Ships directly to customer</option>' +
+            '</select>' +
+          '</label>' +
           '<label class="checkbox-label">' +
             '<input type="checkbox" name="shipping"' + (p.shipping ? ' checked' : '') + '> Offer shipping' +
           '</label>' +
