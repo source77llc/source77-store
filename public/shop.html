@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop – Source77 Store</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container shop-page">
+    <h1>Shop All Items</h1>
+
+    <!-- Search -->
+    <div class="shop-controls">
+      <label for="search-input" class="sr-only">Search products</label>
+      <input
+        type="search"
+        id="search-input"
+        class="search-input"
+        placeholder="Search products..."
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Category Filters -->
+    <div id="category-filters" class="category-filters" role="group" aria-label="Filter by category">
+      <!-- Populated by shop.js -->
+    </div>
+
+    <!-- Product Grid -->
+    <div id="product-grid" class="product-grid" aria-live="polite" aria-label="Products">
+      <!-- Populated by shop.js -->
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/config.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/products-seed.js" defer></script>
+  <script src="/js/shop.js" defer></script>
+</body>
+</html>

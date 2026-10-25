@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Source77 Store</title>
+  <!-- Paths relative from admin/ subfolder -->
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container admin-page">
+    <h1>Source77 Admin</h1>
+
+    <!-- Login Form -->
+    <div id="login-form" class="admin-login-card">
+      <h2>Admin Login</h2>
+      <p>Enter your admin password to access the panel.</p>
+      <form id="admin-login-form" autocomplete="off">
+        <div class="form-group">
+          <label for="admin-password">Password</label>
+          <input
+            type="password"
+            id="admin-password"
+            name="password"
+            class="form-control"
+            required
+            autocomplete="current-password"
+            placeholder="Enter admin password"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+        <p id="login-error" class="login-error" aria-live="polite" hidden>
+          Incorrect password. Please try again.
+        </p>
+      </form>
+    </div>
+
+    <!-- Admin Panel (hidden until logged in) -->
+    <div id="admin-panel" class="admin-panel" hidden>
+
+      <!-- Tab Buttons -->
+      <div class="admin-tabs" role="tablist">
+        <button
+          class="admin-tab-btn active"
+          role="tab"
+          data-tab="tab-products"
+          aria-selected="true"
+          aria-controls="tab-products"
+        >
+          Products
+        </button>
+        <button
+          class="admin-tab-btn"
+          role="tab"
+          data-tab="tab-orders"
+          aria-selected="false"
+          aria-controls="tab-orders"
+        >
+          Orders
+        </button>
+      </div>
+
+      <!-- Products Tab -->
+      <div
+        id="tab-products"
+        class="admin-tab-content"
+        role="tabpanel"
+        aria-label="Products"
+      >
+        <div class="admin-tab-header">
+          <h2>Products</h2>
+          <button id="add-product-btn" class="btn btn-primary btn-sm">+ Add Product</button>
+        </div>
+        <div id="products-table-wrap">
+          <!-- Populated by admin.js -->
+          <p class="admin-empty">Loading products&hellip;</p>
+        </div>
+      </div>
+
+      <!-- Orders Tab -->
+      <div
+        id="tab-orders"
+        class="admin-tab-content"
+        role="tabpanel"
+        aria-label="Orders"
+        hidden
+      >
+        <div class="admin-tab-header">
+          <h2>Orders</h2>
+        </div>
+        <div id="orders-table-wrap">
+          <!-- Populated by admin.js -->
+          <p class="admin-empty">Loading orders&hellip;</p>
+        </div>
+      </div>
+
+    </div><!-- /#admin-panel -->
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <!-- Paths relative from admin/ subfolder -->
+  <script src="../../js/config.js" defer></script>
+  <script src="../../js/nav.js" defer></script>
+  <script src="../../js/admin.js" defer></script>
+</body>
+</html>

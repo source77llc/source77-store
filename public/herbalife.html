@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herbalife Products – Source77 Store</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container herbalife-page">
+    <h1>Herbalife Products</h1>
+
+    <div class="herbalife-card">
+      <p class="herbalife-intro">
+        The owner is an independent Herbalife distributor. Visit the official page for
+        wellness products and to place orders.
+      </p>
+
+      <a
+        id="herbalife-cta"
+        href="#"
+        class="btn btn-primary btn-lg"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Go to Herbalife Page
+      </a>
+
+      <p class="herbalife-disclaimer">
+        Herbalife products are not sold through this store. Clicking the button takes
+        you to an external site.
+      </p>
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/config.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script defer>
+    (function () {
+      function init() {
+        var cta = document.getElementById('herbalife-cta');
+        if (window.CONFIG && window.CONFIG.HERBALIFE_URL) {
+          cta.href = window.CONFIG.HERBALIFE_URL;
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>

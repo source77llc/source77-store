@@ -1,0 +1,10 @@
+{
+  "name": "source77-backend",
+  "version": "1.0.0",
+  "description": "Source77 Store serverless backend",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/lib-dynamodb": "^3.600.0",
+    "stripe": "^14.0.0"
+  }
+}

@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Source77 Store Backend
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 10
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowHeaders: "'Content-Type,x-admin-key'"
+      AllowMethods: "'GET,POST,PUT,DELETE,PATCH,OPTIONS'"
+
+Resources:
+  # ─── DynamoDB Tables ───────────────────────────────────────────────────────
+
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # ─── Lambda Functions ──────────────────────────────────────────────────────
+
+  ProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/products.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Environment:
+        Variables:
+          PRODUCTS_TABLE: !Ref ProductsTable
+          ADMIN_KEY: REPLACE_WITH_YOUR_ADMIN_KEY
+      Events:
+        ListProducts:
+          Type: Api
+          Properties:
+            Path: /products
+            Method: GET
+        CreateProduct:
+          Type: Api
+          Properties:
+            Path: /products
+            Method: POST
+        GetProduct:
+          Type: Api
+          Properties:
+            Path: /products/{id}
+            Method: GET
+        UpdateProduct:
+          Type: Api
+          Properties:
+            Path: /products/{id}
+            Method: PUT
+        DeleteProduct:
+          Type: Api
+          Properties:
+            Path: /products/{id}
+            Method: DELETE
+        OptionsProducts:
+          Type: Api
+          Properties:
+            Path: /products
+            Method: OPTIONS
+        OptionsProductsId:
+          Type: Api
+          Properties:
+            Path: /products/{id}
+            Method: OPTIONS
+
+  CheckoutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/create-checkout-session.handler
+      Environment:
+        Variables:
+          STRIPE_SECRET_KEY: REPLACE_WITH_YOUR_STRIPE_SECRET_KEY
+          FRONTEND_URL: REPLACE_WITH_YOUR_FRONTEND_URL
+          TAX_RATE: '0.0825'
+      Events:
+        CreateCheckoutSession:
+          Type: Api
+          Properties:
+            Path: /checkout/session
+            Method: POST
+        OptionsCheckout:
+          Type: Api
+          Properties:
+            Path: /checkout/session
+            Method: OPTIONS
+
+  WebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/order-webhook.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+      Environment:
+        Variables:
+          STRIPE_SECRET_KEY: REPLACE_WITH_YOUR_STRIPE_SECRET_KEY
+          STRIPE_WEBHOOK_SECRET: REPLACE_WITH_YOUR_STRIPE_WEBHOOK_SECRET
+          ORDERS_TABLE: !Ref OrdersTable
+      Events:
+        StripeWebhook:
+          Type: Api
+          Properties:
+            Path: /webhook/stripe
+            Method: POST
+
+  OrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/orders.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+          ADMIN_KEY: REPLACE_WITH_YOUR_ADMIN_KEY
+      Events:
+        ListOrders:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: GET
+        GetOrder:
+          Type: Api
+          Properties:
+            Path: /orders/{id}
+            Method: GET
+        PatchOrder:
+          Type: Api
+          Properties:
+            Path: /orders/{id}
+            Method: PATCH
+        OptionsOrders:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: OPTIONS
+        OptionsOrdersId:
+          Type: Api
+          Properties:
+            Path: /orders/{id}
+            Method: OPTIONS
+
+# ─── Outputs ────────────────────────────────────────────────────────────────
+
+Outputs:
+  ApiGatewayUrl:
+    Description: API Gateway endpoint URL for the Prod stage
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+  ProductsTableName:
+    Description: DynamoDB Products table name
+    Value: !Ref ProductsTable
+  OrdersTableName:
+    Description: DynamoDB Orders table name
+    Value: !Ref OrdersTable

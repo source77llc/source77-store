@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us – Source77 Store</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container contact-page">
+    <h1>Contact Us</h1>
+
+    <p class="contact-intro">
+      For fastest response, email us directly. We typically reply within one business day.
+    </p>
+
+    <!-- Contact Cards -->
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="contact-card-icon" aria-hidden="true">✉️</div>
+        <h2>Email</h2>
+        <p>General questions, order inquiries, and anything else.</p>
+        <a href="mailto:info@source77llc.com" class="btn btn-primary">
+          info@source77llc.com
+        </a>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-card-icon" aria-hidden="true">📞</div>
+        <h2>Phone</h2>
+        <p>Available during business hours. Leave a voicemail if we miss you.</p>
+        <a href="tel:+19152233255" class="btn btn-secondary">
+          (915) 223-3255
+        </a>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-card-icon" aria-hidden="true">📍</div>
+        <h2>Pickup Location</h2>
+        <address>
+          H-E-B 17439 Classen Rd<br />
+          San Antonio, TX 78247
+        </address>
+        <p>Contact us to schedule a pickup time after ordering.</p>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <section class="contact-form-section">
+      <h2>Send a Message</h2>
+      <form
+        class="contact-form"
+        action="mailto:info@source77llc.com"
+        method="POST"
+        enctype="text/plain"
+      >
+        <div class="form-group">
+          <label for="contact-name">Your Name</label>
+          <input
+            type="text"
+            id="contact-name"
+            name="Name"
+            class="form-control"
+            required
+            autocomplete="name"
+            placeholder="Jane Smith"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="contact-email">Your Email</label>
+          <input
+            type="email"
+            id="contact-email"
+            name="Email"
+            class="form-control"
+            required
+            autocomplete="email"
+            placeholder="jane@example.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="contact-message">Message</label>
+          <textarea
+            id="contact-message"
+            name="Message"
+            class="form-control"
+            rows="5"
+            required
+            placeholder="Tell us about your order, a question, or anything else&hellip;"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <p class="form-note">
+        <em>Note: This form opens your email client. For the most reliable delivery, email us
+        directly at <a href="mailto:info@source77llc.com">info@source77llc.com</a>.</em>
+      </p>
+    </section>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/config.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+</body>
+</html>

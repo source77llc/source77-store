@@ -1,0 +1,7 @@
+node_modules/
+.aws-sam/
+samconfig.toml
+.env
+*.env.local
+.DS_Store
+Thumbs.db

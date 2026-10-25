@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Received – Source77 Store</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container success-page">
+    <div class="success-card">
+      <div class="success-icon" aria-hidden="true">✅</div>
+      <h1>Order Received!</h1>
+      <p class="success-message">
+        Thank you for your order. You will receive a confirmation email shortly.
+      </p>
+      <p class="success-session" id="session-display"></p>
+      <a href="shop.html" class="btn btn-primary">Continue Shopping</a>
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/config.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script defer>
+    (function () {
+      function init() {
+        var sessionId = new URLSearchParams(window.location.search).get('session_id');
+        if (sessionId) {
+          var el = document.getElementById('session-display');
+          el.textContent = 'Order reference: ' + sessionId;
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>

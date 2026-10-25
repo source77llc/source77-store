@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#e8ecf0"/>
+
+  <!-- Shopping bag outline icon, centered at (200, 175) -->
+  <!-- Bag body: rounded rectangle -->
+  <rect x="130" y="160" width="140" height="110" rx="8" ry="8"
+        fill="none" stroke="#9aabb8" stroke-width="8"/>
+
+  <!-- Bag handle: arch above body -->
+  <path d="M165,160 L165,138 Q165,110 200,110 Q235,110 235,138 L235,160"
+        fill="none" stroke="#9aabb8" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- 'No Image' label -->
+  <text x="200" y="305" font-family="Arial, Helvetica, sans-serif"
+        font-size="14" fill="#9aabb8" text-anchor="middle"
+        dominant-baseline="middle">No Image</text>
+</svg>

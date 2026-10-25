@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Source77 Store – Shop Cars, Home, Electronics &amp; More</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    /* ── Hero Photo Grid ──────────────────────────────────── */
+    .hero-grid-section {
+      background: var(--navy);
+      padding: 0;
+    }
+    .hero-banner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 220px 220px;
+      gap: 3px;
+      max-height: 443px;
+      overflow: hidden;
+    }
+    @media (min-width: 768px) {
+      .hero-banner {
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-rows: 340px;
+        max-height: 340px;
+      }
+      .hero-banner .hero-tile:first-child {
+        grid-row: 1;
+      }
+    }
+    .hero-tile {
+      position: relative;
+      overflow: hidden;
+      background: #1a3257;
+    }
+    .hero-tile svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hero-tile-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(11,31,58,0.85));
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.5rem 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .hero-cta-bar {
+      background: var(--navy);
+      text-align: center;
+      padding: 1.75rem 1rem 2rem;
+    }
+    .hero-cta-bar h1 {
+      color: var(--white);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      margin-bottom: 0.5rem;
+    }
+    .hero-cta-bar p {
+      color: #a8bdd4;
+      margin-bottom: 1.25rem;
+      font-size: 1rem;
+    }
+
+    /* ── Section spacing ──────────────────────────────────── */
+    .home-section {
+      padding: 2.5rem 0;
+    }
+    .home-section + .home-section {
+      border-top: 1px solid var(--gray-200);
+    }
+
+    /* ── Source badge strips ──────────────────────────────── */
+    .source-badge-strip {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    /* ── Section intro ────────────────────────────────────── */
+    .section-intro {
+      max-width: 640px;
+      color: var(--gray-600);
+      margin-top: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-note {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+      margin-top: 1rem;
+    }
+
+    /* ── Arbitrage card grid ──────────────────────────────── */
+    .arbitrage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .arbitrage-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: var(--shadow);
+    }
+    .arbitrage-card .card-source {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--orange);
+    }
+    .arbitrage-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .arbitrage-card p {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      flex: 1;
+    }
+    .arbitrage-card .btn {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    /* ── Dropship section ─────────────────────────────────── */
+    .dropship-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .dropship-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: var(--shadow);
+    }
+    .dropship-card .card-source {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6366f1;
+    }
+    .dropship-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .dropship-card p {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      flex: 1;
+    }
+
+    /* ── Who We Are blurb ─────────────────────────────────── */
+    .about-blurb-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    @media (min-width: 768px) {
+      .about-blurb-inner {
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+      }
+    }
+    .about-blurb-text { flex: 1; }
+    .about-blurb-text h2 { margin-bottom: 0.5rem; }
+    .about-blurb-text p { color: var(--gray-600); margin-bottom: 0.75rem; }
+
+    /* ── Contact strip ────────────────────────────────────── */
+    .contact-strip {
+      background: var(--navy);
+      padding: 0.9rem 1rem;
+    }
+    .contact-strip-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .contact-item { color: #a8bdd4; font-size: 0.9rem; }
+    .contact-item a { color: var(--white); }
+    .contact-divider { color: #3d5a7a; }
+  </style>
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+
+  <!-- ── Hero: Photo Grid Banner ──────────────────────────── -->
+  <section class="hero-grid-section">
+    <div class="hero-banner">
+
+      <!-- Tile 1: Car Parts (wide on desktop) -->
+      <div class="hero-tile">
+        <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1a3560"/>
+              <stop offset="100%" stop-color="#0d2240"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="340" fill="url(#g1)"/>
+          <!-- Stylized wheel/rotor -->
+          <circle cx="200" cy="170" r="90" fill="none" stroke="#F07C2A" stroke-width="6" opacity="0.4"/>
+          <circle cx="200" cy="170" r="60" fill="none" stroke="#F07C2A" stroke-width="3" opacity="0.6"/>
+          <circle cx="200" cy="170" r="28" fill="#F07C2A" opacity="0.7"/>
+          <line x1="200" y1="80" x2="200" y2="260" stroke="#F07C2A" stroke-width="2.5" opacity="0.3"/>
+          <line x1="110" y1="170" x2="290" y2="170" stroke="#F07C2A" stroke-width="2.5" opacity="0.3"/>
+          <line x1="136" y1="106" x2="264" y2="234" stroke="#F07C2A" stroke-width="2.5" opacity="0.3"/>
+          <line x1="264" y1="106" x2="136" y2="234" stroke="#F07C2A" stroke-width="2.5" opacity="0.3"/>
+          <!-- lug bolts -->
+          <circle cx="200" cy="100" r="7" fill="#a8bdd4" opacity="0.7"/>
+          <circle cx="200" cy="240" r="7" fill="#a8bdd4" opacity="0.7"/>
+          <circle cx="140" cy="135" r="7" fill="#a8bdd4" opacity="0.7"/>
+          <circle cx="260" cy="135" r="7" fill="#a8bdd4" opacity="0.7"/>
+          <circle cx="140" cy="205" r="7" fill="#a8bdd4" opacity="0.7"/>
+          <circle cx="260" cy="205" r="7" fill="#a8bdd4" opacity="0.7"/>
+        </svg>
+        <div class="hero-tile-label">Car Parts &amp; Accessories</div>
+      </div>
+
+      <!-- Tile 2: Home Goods -->
+      <div class="hero-tile">
+        <svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <rect width="300" height="340" fill="#132d52"/>
+          <!-- Stylized house outline -->
+          <polygon points="150,60 40,160 80,160 80,280 220,280 220,160 260,160" fill="none" stroke="#F07C2A" stroke-width="5" stroke-linejoin="round" opacity="0.7"/>
+          <!-- door -->
+          <rect x="120" y="210" width="60" height="70" rx="4" fill="#F07C2A" opacity="0.5"/>
+          <!-- window -->
+          <rect x="85" y="185" width="45" height="40" rx="3" fill="none" stroke="#a8bdd4" stroke-width="3" opacity="0.6"/>
+          <rect x="170" y="185" width="45" height="40" rx="3" fill="none" stroke="#a8bdd4" stroke-width="3" opacity="0.6"/>
+        </svg>
+        <div class="hero-tile-label">Home Goods</div>
+      </div>
+
+      <!-- Tile 3: Electronics -->
+      <div class="hero-tile">
+        <svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <rect width="300" height="340" fill="#0f2540"/>
+          <!-- Phone outline -->
+          <rect x="95" y="80" width="110" height="185" rx="14" fill="none" stroke="#F07C2A" stroke-width="5" opacity="0.7"/>
+          <rect x="110" y="100" width="80" height="120" rx="4" fill="#1a3560" opacity="0.8"/>
+          <!-- screen glow lines -->
+          <line x1="120" y1="115" x2="180" y2="115" stroke="#a8bdd4" stroke-width="2" opacity="0.5"/>
+          <line x1="120" y1="128" x2="165" y2="128" stroke="#a8bdd4" stroke-width="2" opacity="0.3"/>
+          <line x1="120" y1="141" x2="172" y2="141" stroke="#a8bdd4" stroke-width="2" opacity="0.3"/>
+          <!-- home button -->
+          <circle cx="150" cy="240" r="10" fill="none" stroke="#F07C2A" stroke-width="3" opacity="0.6"/>
+          <!-- earpiece -->
+          <rect x="130" y="90" width="40" height="5" rx="2.5" fill="#a8bdd4" opacity="0.4"/>
+        </svg>
+        <div class="hero-tile-label">Electronics</div>
+      </div>
+
+      <!-- Tile 4: General Merchandise -->
+      <div class="hero-tile">
+        <svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <rect width="300" height="340" fill="#112845"/>
+          <!-- Box outline -->
+          <rect x="70" y="130" width="160" height="130" rx="4" fill="none" stroke="#F07C2A" stroke-width="5" opacity="0.7"/>
+          <!-- box lid open -->
+          <path d="M70,130 L130,80 L230,80 L230,130" fill="none" stroke="#F07C2A" stroke-width="4" opacity="0.5"/>
+          <line x1="130" y1="80" x2="130" y2="130" stroke="#F07C2A" stroke-width="2.5" opacity="0.4"/>
+          <!-- tape line -->
+          <line x1="150" y1="130" x2="150" y2="260" stroke="#a8bdd4" stroke-width="3" opacity="0.35"/>
+          <!-- stars suggesting variety -->
+          <text x="108" y="205" font-size="28" fill="#F07C2A" opacity="0.5" font-family="Arial">★</text>
+          <text x="162" y="205" font-size="20" fill="#a8bdd4" opacity="0.4" font-family="Arial">★</text>
+        </svg>
+        <div class="hero-tile-label">General Merchandise</div>
+      </div>
+
+    </div>
+
+    <!-- CTA under the grid -->
+    <div class="hero-cta-bar">
+      <h1>Your One-Stop Shop — New, Used &amp; Direct</h1>
+      <p>Car parts · home goods · electronics · warehouse deals · drop-shipped items</p>
+      <a href="shop.html" class="btn btn-primary btn-lg">Browse the Store</a>
+    </div>
+  </section>
+
+  <!-- ── Shop by Category ──────────────────────────────────── -->
+  <section class="home-section">
+    <div class="container">
+      <h2 class="section-title">Shop by Category</h2>
+      <div class="category-grid">
+        <a href="shop.html?category=Car+Parts" class="category-card">
+          <div class="category-icon" aria-hidden="true">🔧</div>
+          <h3>Car Parts</h3>
+          <p>OEM and aftermarket parts, accessories, and more.</p>
+        </a>
+        <a href="shop.html?category=Home+Goods" class="category-card">
+          <div class="category-icon" aria-hidden="true">🏠</div>
+          <h3>Home Goods</h3>
+          <p>Kitchen, bath, décor, and everyday household items.</p>
+        </a>
+        <a href="shop.html?category=Electronics" class="category-card">
+          <div class="category-icon" aria-hidden="true">📱</div>
+          <h3>Electronics</h3>
+          <p>Phones, tablets, gadgets, and accessories.</p>
+        </a>
+        <a href="shop.html?category=General+Merchandise" class="category-card">
+          <div class="category-icon" aria-hidden="true">📦</div>
+          <h3>General Merchandise</h3>
+          <p>Tools, toys, clothing, and everything in between.</p>
+        </a>
+        <a href="shop.html?category=Warehouse+Deals" class="category-card">
+          <div class="category-icon" aria-hidden="true">🏪</div>
+          <h3>Warehouse Deals</h3>
+          <p>Sam's Club &amp; Costco member finds at great prices.</p>
+        </a>
+        <a href="shop.html?category=Dropship" class="category-card">
+          <div class="category-icon" aria-hidden="true">🚚</div>
+          <h3>Ships Direct</h3>
+          <p>Items shipped straight from US suppliers to your door.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Warehouse Deals (Arbitrage) ───────────────────────── -->
+  <section class="home-section" style="background:var(--gray-50);">
+    <div class="container">
+      <h2 class="section-title">Warehouse Deals</h2>
+      <p class="section-intro">
+        Items sourced directly from Sam's Club and Costco — bought in bulk with active memberships and
+        resold at competitive prices. In-store and online finds, refreshed regularly.
+      </p>
+      <div class="source-badge-strip">
+        <span class="source-badge">🏪 Sam's Club Member</span>
+        <span class="source-badge">🛒 Costco Member</span>
+      </div>
+      <div class="arbitrage-grid">
+        <div class="arbitrage-card">
+          <span class="card-source">Sam's Club</span>
+          <h3>Bulk Paper Towels &amp; Cleaning Supplies</h3>
+          <p>Warehouse multi-packs split and priced for everyday buyers.</p>
+          <a href="shop.html?category=Warehouse+Deals" class="btn btn-secondary">Browse Deals</a>
+        </div>
+        <div class="arbitrage-card">
+          <span class="card-source">Costco</span>
+          <h3>Premium Kitchen &amp; Storage Items</h3>
+          <p>Costco-quality items available without a membership requirement.</p>
+          <a href="shop.html?category=Warehouse+Deals" class="btn btn-secondary">Browse Deals</a>
+        </div>
+        <div class="arbitrage-card">
+          <span class="card-source">Sam's Club · Costco</span>
+          <h3>Electronics &amp; Accessories</h3>
+          <p>Member-only warehouse finds — cables, chargers, gadgets.</p>
+          <a href="shop.html?category=Warehouse+Deals" class="btn btn-secondary">Browse Deals</a>
+        </div>
+      </div>
+      <p class="section-note">* Product selection rotates as inventory is sourced. New items added regularly.</p>
+    </div>
+  </section>
+
+  <!-- ── Ships Direct (Dropshipping) ──────────────────────── -->
+  <section class="home-section">
+    <div class="container">
+      <h2 class="section-title">Ships Direct to You</h2>
+      <p class="section-intro">
+        Browse items from our curated US supplier network — shipped straight from the warehouse
+        to your door. No waiting on a middleman.
+      </p>
+      <div class="source-badge-strip">
+        <span class="source-badge">🇺🇸 US Suppliers via AppScenic</span>
+        <span class="source-badge">🛍️ Shopify Catalog</span>
+      </div>
+      <div class="dropship-grid">
+        <div class="dropship-card">
+          <span class="card-source">Ships Direct</span>
+          <h3>Home Décor &amp; Furnishings</h3>
+          <p>Curated home items shipped from verified US suppliers.</p>
+          <a href="shop.html?category=Dropship" class="btn btn-primary">Shop Now</a>
+        </div>
+        <div class="dropship-card">
+          <span class="card-source">Ships Direct</span>
+          <h3>Health &amp; Personal Care</h3>
+          <p>Everyday wellness items, shipped fast from stateside suppliers.</p>
+          <a href="shop.html?category=Dropship" class="btn btn-primary">Shop Now</a>
+        </div>
+        <div class="dropship-card">
+          <span class="card-source">Ships Direct</span>
+          <h3>Pet &amp; Outdoor Supplies</h3>
+          <p>Quality products for pets and outdoor living.</p>
+          <a href="shop.html?category=Dropship" class="btn btn-primary">Shop Now</a>
+        </div>
+      </div>
+      <p class="section-note">* Dropship items ship separately from local inventory. Shipping time varies by supplier.</p>
+    </div>
+  </section>
+
+  <!-- ── Who We Are ────────────────────────────────────────── -->
+  <section class="home-section" style="background:var(--gray-50);">
+    <div class="container about-blurb-inner">
+      <div class="about-blurb-text">
+        <h2>Who We Are</h2>
+        <p>
+          Source77 LLC is a small business that finds quality merchandise and makes it accessible.
+          Every item is looked at and condition-noted before it goes up for sale.
+          No surprises — what you see is what you get.
+        </p>
+        <p>
+          <strong>Local pickup available</strong> at H-E-B, 17439 Classen Rd, San Antonio, TX.
+        </p>
+        <a href="about.html" class="btn btn-secondary">About Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Contact Strip ─────────────────────────────────────── -->
+  <section class="contact-strip">
+    <div class="container contact-strip-inner">
+      <span class="contact-item">
+        <span aria-hidden="true">✉️</span>
+        <a href="mailto:info@source77llc.com">info@source77llc.com</a>
+      </span>
+      <span class="contact-divider" aria-hidden="true">|</span>
+      <span class="contact-item">
+        <span aria-hidden="true">📞</span>
+        <a href="tel:+19152233255">(915) 223-3255</a>
+      </span>
+    </div>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/config.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+</body>
+</html>
