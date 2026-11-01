@@ -28,6 +28,8 @@
   <script defer>
     (function () {
       function init() {
+        try { localStorage.removeItem('source77_cart'); } catch (e) {}
+        if (window.updateNavCartBadge) window.updateNavCartBadge();
         var sessionId = new URLSearchParams(window.location.search).get('session_id');
         if (sessionId) {
           var el = document.getElementById('session-display');
