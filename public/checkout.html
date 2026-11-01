@@ -12,7 +12,22 @@
   <main class="container checkout-page">
     <h1>Checkout</h1>
     <div id="checkout-container" aria-live="polite">
-      <!-- Rendered by checkout.js -->
+      <section>
+        <h2>Your Order</h2>
+        <div id="cart-summary"></div>
+      </section>
+      <section>
+        <h2>Delivery</h2>
+        <div id="shipping-options"></div>
+      </section>
+      <section class="totals">
+        <div>Subtotal: <span id="subtotal-value">$0.00</span></div>
+        <div>Shipping: <span id="shipping-value">Free</span></div>
+        <div>Tax: <span id="tax-value">$0.00</span></div>
+        <div><strong>Total: <span id="order-total-value">$0.00</span></strong></div>
+      </section>
+      <p id="checkout-error" class="error-msg" style="display:none"></p>
+      <button id="pay-button" class="btn btn-primary">Pay with Card</button>
     </div>
   </main>
 
