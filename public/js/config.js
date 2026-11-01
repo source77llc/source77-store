@@ -5,7 +5,7 @@
    ============================================================ */
 
 const CONFIG = {
-  API_BASE_URL: 'https://dmx0gx241j.execute-api.us-east-2.amazonaws.com/Prod',
+  API_BASE: 'https://dmx0gx241j.execute-api.us-east-2.amazonaws.com/Prod',
   STRIPE_PUBLISHABLE_KEY: 'pk_test_51UUS3hBklFjoyPYWgfeZzAwIV8fyfVzFEwzqno53dmaUxUj2sbTtMdt0CdSn83mrhPzQpqfbjhG6k0cAtZjqHhCX00uGnTLkMt',
   HERBALIFE_URL: 'https://www.goherbalife.com',
   ADMIN_PASSWORD: 'source77admin',
