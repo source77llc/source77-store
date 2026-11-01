@@ -6,7 +6,7 @@
 
 var CONFIG = {
   API_BASE_URL: 'https://dmx0gx241j.execute-api.us-east-2.amazonaws.com/Prod',
-  STRIPE_PUBLISHABLE_KEY: 'pk_test_51UUS3hBklFjoyPYWgfeZzAwIV8fyfVzFEwzqno53dmaUxUj2sbTtMdt0CdSn83mrhPzQpqfbjhG6k0cAtZjqHhCX00uGnTLkMt',
+  STRIPE_PUBLISHABLE_KEY: 'pk_live_51UUaXwBolLAdvJCwNQ5nasiLBHF4RRuTHQJakrgzZALvS6jgbxyb9TjA8xY9KUcICndk6SrJv2QelZ5d5WAnUmIz00ZcAxyqib',
   HERBALIFE_URL: 'https://www.goherbalife.com',
   ADMIN_PASSWORD: 'source77admin',
   TAX_RATE: 0.0825,
