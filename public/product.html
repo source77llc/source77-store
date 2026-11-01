@@ -1,17 +1,176 @@
-/* ============================================================
-   Source77 Store — config.js
-   Shared runtime configuration. Replace placeholder values
-   before going live.
-   ============================================================ */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product – Source77 Store</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div id="nav-placeholder"></div>
 
-const CONFIG = {
-  API_BASE_URL: 'https://dmx0gx241j.execute-api.us-east-2.amazonaws.com/Prod',
-  STRIPE_PUBLISHABLE_KEY: 'pk_test_51UUS3hBklFjoyPYWgfeZzAwIV8fyfVzFEwzqno53dmaUxUj2sbTtMdt0CdSn83mrhPzQpqfbjhG6k0cAtZjqHhCX00uGnTLkMt',
-  HERBALIFE_URL: 'https://www.goherbalife.com',
-  ADMIN_PASSWORD: 'source77admin',
-  TAX_RATE: 0.0825,
-  FLAT_SHIPPING_RATE: 8.99,
-  FREE_PICKUP_LABEL: 'Local Pickup - Free (H-E-B, 17439 Classen Rd, San Antonio, TX 78247)',
-  ADMIN_KEY: 'REPLACE_WITH_YOUR_ADMIN_KEY',
-  FRONTEND_URL: 'https://master.d27dcixml6h0h8.amplifyapp.com'
-};
+  <main class="container product-page">
+    <a href="shop.html" class="back-link">&larr; Back to Shop</a>
+
+    <div class="product-detail">
+      <!-- Product Image -->
+      <div class="product-image-wrap">
+        <img
+          id="product-image"
+          src=""
+          alt=""
+          class="product-image"
+        />
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-info">
+        <h1 id="product-title" class="product-title">Loading&hellip;</h1>
+
+        <div class="product-meta">
+          <span id="product-condition" class="condition-badge"></span>
+          <span id="product-price" class="product-price"></span>
+        </div>
+
+        <div id="product-description" class="product-description"></div>
+
+        <div id="product-weight" class="product-weight"></div>
+
+        <!-- Add to Cart -->
+        <div class="add-to-cart-row">
+          <label for="qty-input" class="qty-label">Qty:</label>
+          <input
+            type="number"
+            id="qty-input"
+            class="qty-input"
+            min="1"
+            value="1"
+            aria-label="Quantity"
+          />
+          <button id="add-to-cart-btn" class="btn btn-primary" disabled>
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/config.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/products-seed.js" defer></script>
+  <script src="/js/cart.js" defer></script>
+  <script defer>
+    (function () {
+      function getParam(name) {
+        return new URLSearchParams(window.location.search).get(name);
+      }
+
+      function conditionLabel(c) {
+        const map = {
+          new: 'New',
+          'like-new': 'Like New',
+          good: 'Good',
+          fair: 'Fair',
+          salvage: 'Salvage / Parts',
+        };
+        return map[c] || c || 'Unknown';
+      }
+
+      function formatPrice(cents) {
+        return '$' + (cents / 100).toFixed(2);
+      }
+
+      function populate(product) {
+        document.title = product.title + ' – Source77 Store';
+
+        const titleEl = document.getElementById('product-title');
+        const imgEl = document.getElementById('product-image');
+        const condEl = document.getElementById('product-condition');
+        const priceEl = document.getElementById('product-price');
+        const descEl = document.getElementById('product-description');
+        const weightEl = document.getElementById('product-weight');
+        const btn = document.getElementById('add-to-cart-btn');
+
+        titleEl.textContent = product.title;
+        var imgSrc = (product.images && product.images[0]) || product.image_url || product.image;
+        if (imgSrc) {
+          imgEl.src = imgSrc;
+          imgEl.alt = product.title;
+        } else {
+          imgEl.style.display = 'none';
+        }
+        condEl.textContent = conditionLabel((product.condition || '').toLowerCase());
+        condEl.dataset.condition = product.condition || '';
+        priceEl.textContent = '$' + Number(product.price || 0).toFixed(2);
+        descEl.textContent = product.description || '';
+        if (product.weight_lb) {
+          weightEl.textContent = 'Shipping weight: ' + product.weight_lb + ' lbs';
+        } else {
+          weightEl.style.display = 'none';
+        }
+
+        btn.disabled = false;
+        btn.addEventListener('click', function () {
+          const qty = parseInt(document.getElementById('qty-input').value, 10) || 1;
+          // cart.js expected interface
+          if (window.Cart && typeof window.Cart.addItem === 'function') {
+            window.Cart.addItem(product, qty);
+            btn.textContent = 'Added!';
+            setTimeout(function () { btn.textContent = 'Add to Cart'; }, 1500);
+          } else {
+            // Fallback: store raw cart in localStorage
+            const cart = JSON.parse(localStorage.getItem('source77_cart') || '[]');
+            const existing = cart.find(function (i) { return i.id === product.id; });
+            if (existing) {
+              existing.qty += qty;
+            } else {
+              cart.push({ id: product.id, title: product.title, price: product.price, qty: qty });
+            }
+            localStorage.setItem('source77_cart', JSON.stringify(cart));
+            btn.textContent = 'Added!';
+            setTimeout(function () { btn.textContent = 'Add to Cart'; }, 1500);
+          }
+        });
+      }
+
+      function showError(msg) {
+        document.getElementById('product-title').textContent = msg;
+        document.getElementById('add-to-cart-btn').style.display = 'none';
+      }
+
+      function init() {
+        var id = getParam('id');
+        if (!id) { showError('No product specified.'); return; }
+
+        // Try seed data first
+        if (window.SEED_PRODUCTS) {
+          var found = window.SEED_PRODUCTS.find(function (p) { return String(p.id) === String(id); });
+          if (found) { populate(found); return; }
+        }
+
+        // Try API if configured
+        var apiBase = (window.CONFIG && window.CONFIG.API_BASE_URL) ? window.CONFIG.API_BASE_URL : null;
+        if (apiBase) {
+          fetch(apiBase + '/products/' + encodeURIComponent(id))
+            .then(function (r) {
+              if (!r.ok) throw new Error('Not found');
+              return r.json();
+            })
+            .then(populate)
+            .catch(function () { showError('Product not found.'); });
+        } else {
+          showError('Product not found.');
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
