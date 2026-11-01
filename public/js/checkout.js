@@ -8,7 +8,7 @@
   const SHIPPING_COST = 8.99;
 
   /* ------------------------------------------------------------------ */
-  /* Boot                                                                  */
+  /* Boot                                                              */
   /* ------------------------------------------------------------------ */
   document.addEventListener('DOMContentLoaded', function () {
     const cart = loadCart();
@@ -26,7 +26,7 @@
   });
 
   /* ------------------------------------------------------------------ */
-  /* Cart helpers                                                          */
+  /* Cart helpers                                                      */
   /* ------------------------------------------------------------------ */
   function loadCart() {
     try {
@@ -43,7 +43,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Render cart summary table                                             */
+  /* Render cart summary table                                         */
   /* ------------------------------------------------------------------ */
   function renderCartSummary(cart) {
     const container = document.getElementById('cart-summary');
@@ -80,7 +80,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Render shipping radio cards                                           */
+  /* Render shipping radio cards                                       */
   /* ------------------------------------------------------------------ */
   function renderShippingOptions() {
     const container = document.getElementById('shipping-options');
@@ -104,7 +104,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Totals calculation                                                    */
+  /* Totals calculation                                                */
   /* ------------------------------------------------------------------ */
   function getSelectedShipping() {
     const checked = document.querySelector('input[name="shipping"]:checked');
@@ -133,7 +133,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Pay with Card button                                                  */
+  /* Pay with Card button                                              */
   /* ------------------------------------------------------------------ */
   function bindPayButton(cart) {
     const btn = document.getElementById('pay-button');
@@ -171,7 +171,15 @@
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        cart: cart,
+        cart: cart.map(function (item) {
+          return {
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            quantity: item.qty || item.quantity || 1,
+            image: item.image
+          };
+        }),
         shipping: shippingChoice
       })
     })
@@ -200,7 +208,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Utilities                                                             */
+  /* Utilities                                                         */
   /* ------------------------------------------------------------------ */
   function setText(id, text) {
     const el = document.getElementById(id);
