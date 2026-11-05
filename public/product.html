@@ -29,6 +29,7 @@
 
         <div class="product-meta">
           <span id="product-condition" class="condition-badge"></span>
+          <span id="product-stock" class="stock-badge out-of-stock" style="display:none">Out of stock</span>
           <span id="product-price" class="product-price"></span>
         </div>
 
@@ -111,7 +112,14 @@
           weightEl.style.display = 'none';
         }
 
-        btn.disabled = false;
+        // Out of stock: quantity is a number at or below zero.
+        var outOfStock = (typeof product.quantity === 'number' && product.quantity <= 0);
+        var stockEl = document.getElementById('product-stock');
+        if (stockEl) stockEl.style.display = outOfStock ? '' : 'none';
+        btn.disabled = outOfStock;
+        btn.textContent = outOfStock ? 'Out of Stock' : 'Add to Cart';
+        var qtyInput = document.getElementById('qty-input');
+        if (qtyInput) qtyInput.disabled = outOfStock;
         btn.addEventListener('click', function () {
           const qty = parseInt(document.getElementById('qty-input').value, 10) || 1;
           // cart.js expected interface
