@@ -584,6 +584,20 @@ textarea {
 .condition-badge.used-fair { background: #fee2e2; color: #991b1b; }
 .condition-badge.open-box  { background: #e0f2fe; color: #075985; }
 
+/* Stock badge */
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+.stock-badge.out-of-stock { background: #fee2e2; color: #991b1b; }
+
 .product-card .card-price {
   font-size: 1.15rem;
   font-weight: 700;
