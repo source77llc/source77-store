@@ -40,6 +40,14 @@
 
     var badgeCls = conditionClass(product.condition);
 
+    // Out of stock: quantity is a number at or below zero. Products without a
+    // quantity field keep the current behavior (treated as in stock).
+    var outOfStock = (typeof product.quantity === 'number' && product.quantity <= 0);
+
+    var stockHtml = outOfStock
+      ? '<span class="stock-badge out-of-stock">Out of stock</span>'
+      : '';
+
     var fulfillmentHtml = product.fulfillment === 'direct'
       ? '<span class="fulfillment-badge direct">🚚 Ships directly to you</span>'
       : '<span class="fulfillment-badge local">📍 Local pickup available</span>';
@@ -50,22 +58,25 @@
         '<div class="card-body">' +
           '<div class="card-title">' + escHtml(product.title) + '</div>' +
           '<span class="condition-badge ' + badgeCls + '">' + escHtml(product.condition || 'New') + '</span>' +
+          stockHtml +
           '<div class="card-price">$' + Number(product.price).toFixed(2) + '</div>' +
           fulfillmentHtml +
         '</div>' +
         '<div class="card-actions">' +
-          '<button class="btn btn-primary add-to-cart-btn" ' +
-            'data-product=\'' + JSON.stringify({
-              id:        product.id,
-              title:     product.title,
-              condition: product.condition,
-              price:     product.price,
-              weight_lb: product.weight_lb,
-              images:    product.images || []
-            }).replace(/'/g, '&#39;') + '\'' +
-            ' aria-label="Add ' + escHtml(product.title) + ' to cart">' +
-            'Add to Cart' +
-          '</button>' +
+          (outOfStock
+            ? '<button class="btn btn-primary add-to-cart-btn" disabled>Out of Stock</button>'
+            : '<button class="btn btn-primary add-to-cart-btn" ' +
+              'data-product=\'' + JSON.stringify({
+                id:        product.id,
+                title:     product.title,
+                condition: product.condition,
+                price:     product.price,
+                weight_lb: product.weight_lb,
+                images:    product.images || []
+              }).replace(/'/g, '&#39;') + '\'' +
+              ' aria-label="Add ' + escHtml(product.title) + ' to cart">' +
+              'Add to Cart' +
+            '</button>') +
         '</div>' +
       '</div>'
     );
