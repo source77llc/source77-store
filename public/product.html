@@ -115,8 +115,8 @@
         btn.addEventListener('click', function () {
           const qty = parseInt(document.getElementById('qty-input').value, 10) || 1;
           // cart.js expected interface
-          if (window.Cart && typeof window.Cart.addItem === 'function') {
-            window.Cart.addItem(product, qty);
+          if (typeof window.addToCart === 'function') {
+            window.addToCart(product, qty);
             btn.textContent = 'Added!';
             setTimeout(function () { btn.textContent = 'Add to Cart'; }, 1500);
           } else {
@@ -125,8 +125,17 @@
             const existing = cart.find(function (i) { return i.id === product.id; });
             if (existing) {
               existing.qty += qty;
+              if (!existing.weightLb) existing.weightLb = Number(product.weight_lb) || 0.5;
             } else {
-              cart.push({ id: product.id, title: product.title, price: product.price, qty: qty });
+              cart.push({
+                id: product.id,
+                title: product.title,
+                condition: product.condition || '',
+                price: product.price,
+                image: (product.images && product.images[0]) || product.image_url || '',
+                weightLb: Number(product.weight_lb) || 0.5,
+                qty: qty
+              });
             }
             localStorage.setItem('source77_cart', JSON.stringify(cart));
             btn.textContent = 'Added!';

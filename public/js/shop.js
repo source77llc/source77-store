@@ -60,6 +60,7 @@
               title:     product.title,
               condition: product.condition,
               price:     product.price,
+              weight_lb: product.weight_lb,
               images:    product.images || []
             }).replace(/'/g, '&#39;') + '\'' +
             ' aria-label="Add ' + escHtml(product.title) + ' to cart">' +

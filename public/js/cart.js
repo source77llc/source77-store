@@ -2,7 +2,7 @@
    Source77 Store — cart.js
    Cart logic (localStorage) + cart-page renderer.
    localStorage key: 'source77_cart'  (JSON array of items)
-   Item shape: { id, title, condition, price, qty, image }
+   Item shape: { id, title, condition, price, qty, image, weightLb }
    ============================================================ */
 
 (function () {
@@ -54,6 +54,7 @@
     }
     if (existing) {
       existing.qty += qty;
+      if (!existing.weightLb) existing.weightLb = Number(product.weight_lb) || 0.5;
     } else {
       items.push({
         id:        product.id,
@@ -61,6 +62,7 @@
         condition: product.condition || '',
         price:     Number(product.price) || 0,
         image:     (product.images && product.images[0]) || product.image || '',
+        weightLb:  Number(product.weight_lb) || 0.5,
         qty:       qty
       });
     }
@@ -111,6 +113,14 @@
   }
 
   /** clearCart() */
+  /** getCartWeightOz() — total packaged weight of the cart, in ounces */
+  function getCartWeightOz() {
+    return readCart().reduce(function (sum, item) {
+      var perUnit = Number(item.weightLb) ? Number(item.weightLb) * 16 : 8;
+      return sum + perUnit * (parseInt(item.qty, 10) || 0);
+    }, 0);
+  }
+
   function clearCart() {
     writeCart([]);
   }
@@ -269,6 +279,7 @@
     getCart:        getCart,
     getCartCount:   getCartCount,
     getCartTotal:   getCartTotal,
+    getCartWeightOz: getCartWeightOz,
     clearCart:      clearCart,
     renderCartPage: renderCartPage,
     showToast:      showToast

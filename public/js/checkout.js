@@ -5,7 +5,32 @@
   'use strict';
 
   const TAX_RATE = 0.0825; // Texas 8.25%
-  const SHIPPING_COST = 8.99;
+
+  // Shipping tiers by TOTAL cart weight (oz). Must match the Lambda
+  // (backend/src/create-checkout-session.js) — the Lambda is the
+  // authority at payment time; this is only for display.
+  const SHIPPING_TIERS = [
+    { maxOz: 15.9999, cents: 599, label: 'under 1 lb' },
+    { maxOz: 80, cents: 899, label: '1-5 lb' },
+    { maxOz: Infinity, cents: 1299, label: 'over 5 lb' }
+  ];
+  const DEFAULT_WEIGHT_OZ = 8; // 0.5 lb store default, per unit
+
+  function cartWeightOz(cart) {
+    return cart.reduce(function (sum, item) {
+      var perUnit = Number(item.weightLb) ? Number(item.weightLb) * 16
+        : (Number(item.weightOz) || DEFAULT_WEIGHT_OZ);
+      return sum + perUnit * (parseInt(item.qty, 10) || 1);
+    }, 0);
+  }
+
+  function shippingTier(cart) {
+    var oz = cartWeightOz(cart);
+    for (var i = 0; i < SHIPPING_TIERS.length; i++) {
+      if (oz <= SHIPPING_TIERS[i].maxOz) return SHIPPING_TIERS[i];
+    }
+    return SHIPPING_TIERS[SHIPPING_TIERS.length - 1];
+  }
 
   /* ------------------------------------------------------------------ */
   /* Boot                                                              */
@@ -19,7 +44,7 @@
     }
 
     renderCartSummary(cart);
-    renderShippingOptions();
+    renderShippingOptions(cart);
     recalcTotals(cart);
     bindShippingChange(cart);
     bindPayButton(cart);
@@ -82,9 +107,13 @@
   /* ------------------------------------------------------------------ */
   /* Render shipping radio cards                                       */
   /* ------------------------------------------------------------------ */
-  function renderShippingOptions() {
+  function renderShippingOptions(cart) {
     const container = document.getElementById('shipping-options');
+
     if (!container) return;
+
+    var tier = shippingTier(cart || []);
+    var shipDollars = '$' + (tier.cents / 100).toFixed(2);
 
     container.innerHTML =
       '<label class="shipping-card">' +
@@ -97,8 +126,8 @@
       '<label class="shipping-card">' +
         '<input type="radio" name="shipping" value="ship"> ' +
         '<span class="shipping-card__body">' +
-          '<strong>Ship to me &ndash; $8.99 flat rate</strong>' +
-          '<span class="shipping-card__detail">Standard shipping to your address</span>' +
+          '<strong>Ship to me &ndash; ' + shipDollars + ' (' + tier.label + ')</strong>' +
+          '<span class="shipping-card__detail">By total cart weight: under 1 lb $5.99, 1-5 lb $8.99, over 5 lb $12.99</span>' +
         '</span>' +
       '</label>';
   }
@@ -114,8 +143,11 @@
   function recalcTotals(cart) {
     const subtotal = cartSubtotal(cart);
     const shippingChoice = getSelectedShipping();
-    const shippingCost = shippingChoice === 'ship' ? SHIPPING_COST : 0;
-    const tax = subtotal * TAX_RATE;
+    const shippingCost = shippingChoice === 'ship'
+      ? shippingTier(cart).cents / 100 : 0;
+
+    // Texas taxes delivery, so shipping joins the tax base.
+    const tax = (subtotal + shippingCost) * TAX_RATE;
     const total = subtotal + shippingCost + tax;
 
     setText('subtotal-value', '$' + subtotal.toFixed(2));
@@ -177,6 +209,7 @@
             title: item.title,
             price: item.price,
             quantity: item.qty || item.quantity || 1,
+            weightOz: (Number(item.weightLb) || 0.5) * 16,
             image: item.image
           };
         }),
