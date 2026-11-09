@@ -316,7 +316,10 @@
     setText('drawer-tax', money(t.tax));
     setText('drawer-total', money(t.total));
     var btn = document.getElementById('drawer-checkout');
-    if (btn) btn.textContent = entries.length ? 'Checkout — ' + money(t.total) : 'Checkout';
+    if (btn) {
+      btn.textContent = entries.length ? 'Checkout — ' + money(t.total) : 'Checkout';
+      btn.disabled = entries.length === 0;
+    }
     var fp = document.getElementById('fulfil-pickup');
     var fs = document.getElementById('fulfil-ship');
     if (fp) fp.className = fulfil === 'pickup' ? 'active' : '';

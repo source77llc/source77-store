@@ -172,6 +172,19 @@
     var subtotal = getCartTotal();
     var oz = getCartWeightOz();
     var tier = shippingTierForOz(oz);
+    // Empty cart: no shipping, no tax, no total — never charge for 0 items.
+    if (items.length === 0) {
+      return {
+        subtotal: 0,
+        shipping: 0,
+        tax: 0,
+        total: 0,
+        tierLabel: tier.label,
+        tierCents: tier.cents,
+        weightOz: 0,
+        count: 0
+      };
+    }
     var shipping = shippingChoice === 'ship' ? tier.cents / 100 : 0;
     var tax = (subtotal + shipping) * TAX_RATE;
     var total = subtotal + shipping + tax;

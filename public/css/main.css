@@ -1260,6 +1260,7 @@ textarea { resize: vertical; min-height: 100px; }
   border: none; border-radius: 999px; padding: 14px;
   font-weight: 700; font-size: 16px;
 }
+.checkout-btn:disabled { opacity: .5; cursor: not-allowed; }
 .drawer .secure { text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px; }
 .drawer .view-cart-link {
   display: block; text-align: center;
