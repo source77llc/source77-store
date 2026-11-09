@@ -18,10 +18,20 @@
 
   function cartWeightOz(cart) {
     return cart.reduce(function (sum, item) {
+      if (item.fulfillment === 'digital') return sum; // downloads weigh 0
       var perUnit = Number(item.weightLb) ? Number(item.weightLb) * 16
         : (Number(item.weightOz) || DEFAULT_WEIGHT_OZ);
       return sum + perUnit * (parseInt(item.qty, 10) || 1);
     }, 0);
+  }
+
+  // A digital-only cart has no delivery choice at all: no pickup,
+  // no shipping, $0 delivery. Mixed carts (digital + physical)
+  // keep the normal pickup/ship radios.
+  function isDigitalCart(cart) {
+    return cart.length > 0 && cart.every(function (item) {
+      return item.fulfillment === 'digital';
+    });
   }
 
   function shippingTier(cart) {
@@ -112,6 +122,21 @@
 
     if (!container) return;
 
+    // Digital-only cart: no delivery choice — instant download
+    // after payment, $0 shipping. A hidden input carries the
+    // 'digital' mode so getSelectedShipping() picks it up.
+    if (isDigitalCart(cart)) {
+      container.innerHTML =
+        '<div class="shipping-card digital-note">' +
+          '<span class="shipping-card__body">' +
+            '<strong>💾 Instant download after payment</strong>' +
+            '<span class="shipping-card__detail">No shipping — your download link appears on the order confirmation page right after payment.</span>' +
+          '</span>' +
+        '</div>' +
+        '<input type="hidden" name="shipping" value="digital">';
+      return;
+    }
+
     var tier = shippingTier(cart || []);
     var shipDollars = '$' + (tier.cents / 100).toFixed(2);
 
@@ -136,6 +161,9 @@
   /* Totals calculation                                                */
   /* ------------------------------------------------------------------ */
   function getSelectedShipping() {
+    // Digital-only carts carry a hidden input instead of radios.
+    const hidden = document.querySelector('input[name="shipping"][type="hidden"]');
+    if (hidden) return hidden.value;
     const checked = document.querySelector('input[name="shipping"]:checked');
     return checked ? checked.value : 'pickup';
   }
@@ -147,6 +175,8 @@
       ? shippingTier(cart).cents / 100 : 0;
 
     // Texas taxes delivery, so shipping joins the tax base.
+    // Digital orders have $0 shipping, so their tax is on the
+    // subtotal only — the same formula with shipping = 0.
     const tax = (subtotal + shippingCost) * TAX_RATE;
     const total = subtotal + shippingCost + tax;
 
@@ -209,7 +239,11 @@
             title: item.title,
             price: item.price,
             quantity: item.qty || item.quantity || 1,
-            weightOz: (Number(item.weightLb) || 0.5) * 16,
+            // Digital items weigh 0 — the old `|| 0.5` default would
+            // wrongly give a download 8 oz of shipping weight.
+            weightOz: item.fulfillment === 'digital' ? 0
+              : (Number(item.weightLb) || 0.5) * 16,
+            fulfillment: item.fulfillment || 'local',
             image: item.image
           };
         }),

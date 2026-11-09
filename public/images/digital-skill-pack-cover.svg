@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Muse Creator Skill Pack cover">
+  <rect width="800" height="1000" fill="#faf7f1"/>
+  <rect x="28" y="28" width="744" height="944" fill="none" stroke="#6b8f71" stroke-width="4"/>
+  <rect x="48" y="48" width="704" height="904" fill="none" stroke="#6b8f71" stroke-width="1.5"/>
+  <text x="400" y="180" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="44" letter-spacing="6" fill="#5a7a5a">MUSE CREATOR</text>
+  <text x="400" y="260" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="bold" letter-spacing="2" fill="#2b2b26">SKILL PACK</text>
+  <line x1="250" y1="310" x2="550" y2="310" stroke="#6b8f71" stroke-width="2"/>
+  <text x="400" y="380" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#2b2b26">YouTube Channel Agent</text>
+  <text x="400" y="425" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#2b2b26">+ Reel Builder</text>
+  <text x="400" y="510" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic" fill="#5a5a52">Plan, script &amp; post YouTube videos</text>
+  <text x="400" y="550" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-style="italic" fill="#5a5a52">without getting on camera.</text>
+  <text x="400" y="640" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#2b2b26">Two copy/paste Muse skills + setup guide</text>
+  <text x="400" y="680" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#2b2b26">Hook library + scene patterns included</text>
+  <rect x="240" y="740" width="320" height="76" rx="38" fill="#5a7a5a"/>
+  <text x="400" y="790" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="bold" fill="#faf7f1">$25 · Instant Download</text>
+  <text x="400" y="900" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="20" letter-spacing="3" fill="#5a5a52">SOURCE77</text>
+</svg>

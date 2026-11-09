@@ -17,6 +17,7 @@
         Thank you for your order. You will receive a confirmation email shortly.
       </p>
       <p class="success-session" id="session-display"></p>
+      <div id="digital-downloads"></div>
       <a href="shop.html" class="btn btn-primary">Continue Shopping</a>
     </div>
   </main>
@@ -27,7 +28,38 @@
   <script src="/js/nav.js" defer></script>
   <script defer>
     (function () {
+      function escHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
       function init() {
+        // Read the just-bought cart BEFORE clearing it — digital
+        // items carry their download_url, which becomes the
+        // download button below. (If the page is refreshed the
+        // cart is already gone, so nothing renders — by design
+        // for v1; the buyer can contact the store for the link.)
+        var cart = [];
+        try { cart = JSON.parse(localStorage.getItem('source77_cart')) || []; } catch (e) {}
+        var digital = cart.filter(function (item) {
+          return item.fulfillment === 'digital' && item.download_url;
+        });
+        if (digital.length) {
+          var box = document.getElementById('digital-downloads');
+          if (box) {
+            box.innerHTML =
+              '<div class="digital-download-box">' +
+                '<h2>💾 Your download is ready</h2>' +
+                digital.map(function (item) {
+                  return '<p class="digital-download-item">' +
+                    '<strong>' + escHtml(item.title || 'Digital product') + '</strong><br>' +
+                    '<a href="' + escHtml(item.download_url) + '" class="btn btn-primary" download>Download now</a>' +
+                  '</p>';
+                }).join('') +
+                '<p class="digital-download-note">Save the file — this link is shown once here. If you lose it, email info@source77llc.com with your order reference.</p>' +
+              '</div>';
+          }
+        }
         try { localStorage.removeItem('source77_cart'); } catch (e) {}
         if (window.updateNavCartBadge) window.updateNavCartBadge();
         var sessionId = new URLSearchParams(window.location.search).get('session_id');

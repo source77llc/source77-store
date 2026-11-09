@@ -43,10 +43,14 @@
 
     var fulfillmentHtml = product.fulfillment === 'direct'
       ? '<span class="fulfillment-badge direct">🚚 Ships directly to you</span>'
+      : product.fulfillment === 'digital'
+      ? '<span class="fulfillment-badge digital">💾 Instant download after payment</span>'
       : '<span class="fulfillment-badge local">📍 Local pickup available</span>';
 
     var shipNote = outOfStock
       ? 'Restock updates on the page'
+      : product.fulfillment === 'digital'
+      ? 'Instant download · no shipping'
       : 'Pickup free · ships by weight';
 
     return (
@@ -70,6 +74,8 @@
                 condition: product.condition,
                 price: product.price,
                 weight_lb: product.weight_lb,
+                fulfillment: product.fulfillment,
+                download_url: product.download_url,
                 images: product.images || []
               }).replace(/'/g, '&#39;') + '\'' +
               ' aria-label="Add ' + escHtml(product.title) + ' to cart">' +

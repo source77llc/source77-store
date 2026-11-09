@@ -2,7 +2,12 @@
    Source77 Store — cart.js (redesign 2026-11-09)
    Cart logic (localStorage) + cart-page renderer.
    localStorage key: 'source77_cart'  (JSON array of items)
-   Item shape: { id, title, condition, price, qty, image, weightLb }
+   Item shape: { id, title, condition, price, qty, image, weightLb,
+                 fulfillment, download_url }
+   fulfillment is 'local' | 'direct' | 'digital'. Digital items
+   (fulfillment 'digital') weigh 0, ship for $0, and carry a
+   download_url used by the order-success page. Digital quantity
+   is always 1 — there is only one file to download.
 
    Redesign changes vs the previous version:
    - Cart page renders stacked cards (.cart-item), never a
@@ -73,18 +78,29 @@
   /**
    * addToCart(product, qty)
    * product must have at minimum: { id, title, price }
-   * Optional: condition, image (first image url string)
+   * Optional: condition, image (first image url string),
+   *   weight_lb, fulfillment ('local' | 'direct' | 'digital'),
+   *   download_url (digital products only).
+   * Digital products are always qty 1 — one file, one download.
    */
   function addToCart(product, qty) {
     qty = parseInt(qty, 10) || 1;
+    // Digital: a single download — never more than 1 in the cart.
+    if (product.fulfillment === 'digital') qty = 1;
     var items = readCart();
     var existing = null;
     for (var i = 0; i < items.length; i++) {
       if (items[i].id === product.id) { existing = items[i]; break; }
     }
+    // weight_lb 0 (digital) must stay 0 — Number(0) is falsy, so the
+    // old `|| 0.5` default would wrongly give a download 0.5 lb.
+    var w = Number(product.weight_lb);
+    var weightLb = isNaN(w) ? 0.5 : w;
     if (existing) {
-      existing.qty += qty;
-      if (!existing.weightLb) existing.weightLb = Number(product.weight_lb) || 0.5;
+      existing.qty = (product.fulfillment === 'digital') ? 1 : existing.qty + qty;
+      if (!existing.weightLb && weightLb) existing.weightLb = weightLb;
+      if (product.fulfillment) existing.fulfillment = product.fulfillment;
+      if (product.download_url) existing.download_url = product.download_url;
     } else {
       items.push({
         id:        product.id,
@@ -92,7 +108,9 @@
         condition: product.condition || '',
         price:     Number(product.price) || 0,
         image:     (product.images && product.images[0]) || product.image || '',
-        weightLb:  Number(product.weight_lb) || 0.5,
+        weightLb:  weightLb,
+        fulfillment: product.fulfillment || 'local',
+        download_url: product.download_url || '',
         qty:       qty
       });
     }
@@ -142,9 +160,11 @@
     }, 0);
   }
 
-  /** getCartWeightOz() — total packaged weight of the cart, in ounces */
+  /** getCartWeightOz() — total packaged weight of the cart, in ounces.
+      Digital items weigh 0 — they are downloads, not packages. */
   function getCartWeightOz() {
     return readCart().reduce(function (sum, item) {
+      if (item.fulfillment === 'digital') return sum;
       var perUnit = Number(item.weightLb) ? Number(item.weightLb) * 16 : 8;
       return sum + perUnit * (parseInt(item.qty, 10) || 0);
     }, 0);
@@ -166,6 +186,8 @@
    * getCartTotals(shippingChoice) — 'pickup' (default) or 'ship'.
    * Returns { subtotal, shipping, tax, total, tierLabel, weightOz }.
    * Same math as checkout.js: tax 8.25% on subtotal + shipping.
+   * An all-digital cart never pays shipping, whatever the drawer
+   * preview choice is — downloads have no weight and no delivery.
    */
   function getCartTotals(shippingChoice) {
     var items = readCart();
@@ -185,7 +207,8 @@
         count: 0
       };
     }
-    var shipping = shippingChoice === 'ship' ? tier.cents / 100 : 0;
+    var allDigital = items.every(function (it) { return it.fulfillment === 'digital'; });
+    var shipping = (shippingChoice === 'ship' && !allDigital) ? tier.cents / 100 : 0;
     var tax = (subtotal + shipping) * TAX_RATE;
     var total = subtotal + shipping + tax;
     return {

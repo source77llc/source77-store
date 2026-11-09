@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  var CATEGORIES = ['All', 'Car Parts', 'Home Goods', 'Electronics', 'General Merchandise'];
+  var CATEGORIES = ['All', 'Car Parts', 'Home Goods', 'Electronics', 'General Merchandise', 'Digital Downloads'];
   var fulfil = 'ship'; /* drawer preview default: shipping (matches preview) */
 
   /* ── Cart helpers (cart.js owns the data) ─────────────── */
@@ -60,7 +60,11 @@
     var subtotal = 0, weight = 0, count = 0;
     entries.forEach(function (e) {
       subtotal += (Number(e.price) || 0) * (parseInt(e.qty, 10) || 0);
-      weight += (Number(e.weightLb) || 0.5) * 16 * (parseInt(e.qty, 10) || 0);
+      // Digital items weigh nothing — a 0 weightLb must stay 0 here
+      // (Number(0) is falsy, so the || 0.5 default would wrongly add 8 oz).
+      var perUnitOz = (e.fulfillment === 'digital') ? 0
+        : ((Number(e.weightLb) || 0.5) * 16);
+      weight += perUnitOz * (parseInt(e.qty, 10) || 0);
       count += parseInt(e.qty, 10) || 0;
     });
     var shipping = 0, shipLabel = 'Pickup — San Antonio';

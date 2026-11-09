@@ -148,10 +148,20 @@
           if (product.fulfillment === 'direct') {
             fulfilEl.className = 'fulfillment-badge direct';
             fulfilEl.textContent = '🚚 Ships directly to you';
+          } else if (product.fulfillment === 'digital') {
+            fulfilEl.className = 'fulfillment-badge digital';
+            fulfilEl.textContent = '💾 Instant download after payment';
           } else {
             fulfilEl.className = 'fulfillment-badge local';
             fulfilEl.textContent = '📍 Local pickup available';
           }
+        }
+
+        // Digital products: one download — quantity is always 1.
+        var qtyInput = document.getElementById('qty-input');
+        if (product.fulfillment === 'digital' && qtyInput) {
+          qtyInput.value = 1;
+          qtyInput.disabled = true;
         }
 
         // Out of stock: quantity is a number at or below zero.
@@ -160,8 +170,8 @@
         if (stockEl) stockEl.style.display = outOfStock ? '' : 'none';
         btn.disabled = outOfStock;
         btn.textContent = outOfStock ? 'Out of Stock' : 'Add to Cart';
-        var qtyInput = document.getElementById('qty-input');
-        if (qtyInput) qtyInput.disabled = outOfStock;
+        // (qtyInput already fetched above; digital stays disabled.)
+        if (qtyInput) qtyInput.disabled = outOfStock || product.fulfillment === 'digital';
         btn.addEventListener('click', function () {
           const qty = parseInt(document.getElementById('qty-input').value, 10) || 1;
           // cart.js expected interface
@@ -174,8 +184,9 @@
             const cart = JSON.parse(localStorage.getItem('source77_cart') || '[]');
             const existing = cart.find(function (i) { return i.id === product.id; });
             if (existing) {
-              existing.qty += qty;
-              if (!existing.weightLb) existing.weightLb = Number(product.weight_lb) || 0.5;
+              existing.qty = (product.fulfillment === 'digital') ? 1 : existing.qty + qty;
+              if (product.fulfillment) existing.fulfillment = product.fulfillment;
+              if (product.download_url) existing.download_url = product.download_url;
             } else {
               cart.push({
                 id: product.id,
@@ -183,8 +194,10 @@
                 condition: product.condition || '',
                 price: product.price,
                 image: (product.images && product.images[0]) || product.image_url || '',
-                weightLb: Number(product.weight_lb) || 0.5,
-                qty: qty
+                weightLb: (function () { var w = Number(product.weight_lb); return isNaN(w) ? 0.5 : w; })(),
+                fulfillment: product.fulfillment || 'local',
+                download_url: product.download_url || '',
+                qty: (product.fulfillment === 'digital') ? 1 : qty
               });
             }
             localStorage.setItem('source77_cart', JSON.stringify(cart));
