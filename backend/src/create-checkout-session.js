@@ -9,6 +9,12 @@
 // formula is unchanged — shipping is 0, so the base is the subtotal).
 // The Lambda rejects 'digital' unless every cart item is digital
 // (fulfillment 'digital'). Mixed carts check out as pickup/ship.
+// CHANGE 2026-11-09: ship-to-Iraq mode ('ship-iq'). Pirate Ship
+// Simple Export Rate, Rest of World band, by total cart weight;
+// $0 Texas tax on Iraq orders; Stripe collects the Iraq shipping
+// address (allowed_countries ['IQ']). US 'ship' orders now also
+// collect the US shipping address (allowed_countries ['US']) so
+// shipped orders finally record a destination address.
 // Runtime stays Node.js 18 (the Node 20/22 bump rides with the next
 // backend change, hard date 2027-02-01).
 
@@ -43,6 +49,31 @@ function shippingTier(totalWeightOz) {
   return SHIPPING_TIERS[SHIPPING_TIERS.length - 1];
 }
 
+// Iraq shipping — Pirate Ship Simple Export Rate, Rest of World
+// band, by TOTAL cart weight (oz). Must match the frontend table
+// (public/js/checkout.js). Rates verified Nov 2026: up to 0.5 lb
+// $14.99, 1 lb $18.99, 2 lb $24.00 (live Pirate Ship SER quotes /
+// rate tables); 3 lb $43.20, 4 lb $52.85 (2026 rate chart, Germany
+// column — highest European Rest-of-World country, used as the
+// conservative proxy so the store never undercharges).
+// SER caps: max 4 lb total, max $400 cart value.
+const IRAQ_TIERS = [
+  { maxOz: 8, cents: 1499, label: 'up to 0.5 lb' },
+  { maxOz: 16, cents: 1899, label: 'up to 1 lb' },
+  { maxOz: 32, cents: 2400, label: 'up to 2 lb' },
+  { maxOz: 48, cents: 4320, label: 'up to 3 lb' },
+  { maxOz: 64, cents: 5285, label: 'up to 4 lb' },
+];
+const IRAQ_MAX_OZ = 64;
+const IRAQ_MAX_VALUE_CENTS = 40000;
+
+function iraqTier(totalWeightOz) {
+  for (var i = 0; i < IRAQ_TIERS.length; i++) {
+    if (totalWeightOz <= IRAQ_TIERS[i].maxOz) return IRAQ_TIERS[i];
+  }
+  return null;
+}
+
 function response(statusCode, body) {
   return {
     statusCode,
@@ -72,8 +103,8 @@ exports.handler = async (event) => {
       return response(400, { error: 'cart is required and must be a non-empty array' });
     }
 
-    if (!['pickup', 'ship', 'digital'].includes(shipping)) {
-      return response(400, { error: "shipping must be 'pickup', 'ship' or 'digital'" });
+    if (!['pickup', 'ship', 'digital', 'ship-iq'].includes(shipping)) {
+      return response(400, { error: "shipping must be 'pickup', 'ship', 'digital' or 'ship-iq'" });
     }
 
     // Digital mode is digital-only: every item must be a download.
@@ -86,6 +117,17 @@ exports.handler = async (event) => {
       });
       if (nonDigital.length > 0) {
         return response(400, { error: "shipping 'digital' requires an all-digital cart" });
+      }
+    }
+
+    // Ship-to-Iraq is physical goods only. (The frontend hides the
+    // Iraq option for digital-only carts; this is the backstop.)
+    if (shipping === 'ship-iq') {
+      var hasPhysical = cart.some(function (item) {
+        return item.fulfillment !== 'digital';
+      });
+      if (!hasPhysical) {
+        return response(400, { error: "shipping 'ship-iq' requires a physical item" });
       }
     }
 
@@ -125,18 +167,36 @@ exports.handler = async (event) => {
       0
     );
 
-    // Shipping line item: free for pickup, weight tier for ship,
-    // $0 for digital (instant download — nothing to deliver).
-    const tier = shippingTier(totalWeightOz);
+    // SER caps for Iraq (server-side backstop — the frontend hides
+    // the option outside these limits, but a crafted request must
+    // not be able to buy under-priced Iraq shipping).
+    if (shipping === 'ship-iq') {
+      if (!iraqTier(totalWeightOz)) {
+        return response(400, { error: 'Iraq shipping is limited to 4 lb total cart weight' });
+      }
+      if (subtotalCents > IRAQ_MAX_VALUE_CENTS) {
+        return response(400, { error: 'Iraq shipping is limited to $400 cart value' });
+      }
+    }
+
+    // Shipping line item: free for pickup, US weight tier for ship,
+    // Iraq SER rate for ship-iq, $0 for digital (instant download —
+    // nothing to deliver).
+    var shipTier = shipping === 'ship-iq'
+      ? iraqTier(totalWeightOz)
+      : shippingTier(totalWeightOz);
     const shippingCents = shipping === 'digital' ? 0
-      : shipping === 'pickup' ? 0 : tier.cents;
+      : shipping === 'pickup' ? 0 : shipTier.cents;
+    const shippingName = shipping === 'ship-iq'
+      ? 'Shipping to Iraq (' + shipTier.label + ')'
+      : 'Shipping (' + shipTier.label + ')';
 
     if (shippingCents > 0) {
       line_items.push({
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'Shipping (' + tier.label + ')',
+            name: shippingName,
           },
           unit_amount: shippingCents,
         },
@@ -144,12 +204,14 @@ exports.handler = async (event) => {
       });
     }
 
-    // Tax line item: 8.25% on subtotal + shipping.
+    // Tax line item: 8.25% on subtotal + shipping for US orders.
     // Texas taxes delivery charges when the sale itself is taxable,
     // so shipping joins the tax base. Pickup orders have $0 shipping,
     // so their tax is unchanged from before. Digital orders also
     // have $0 shipping, so their tax is on the subtotal only.
-    const taxCents = Math.round((subtotalCents + shippingCents) * TAX_RATE);
+    // Iraq orders are not Texas sales — $0 tax.
+    const taxCents = shipping === 'ship-iq' ? 0
+      : Math.round((subtotalCents + shippingCents) * TAX_RATE);
 
     if (taxCents > 0) {
       line_items.push({
@@ -164,7 +226,13 @@ exports.handler = async (event) => {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Collect the destination address on Stripe's page: US for
+    // domestic shipping, Iraq for ship-to-Iraq. (Pickup and digital
+    // orders need no address.) The address lands on the session as
+    // shipping_details and the webhook saves it on the order record
+    // — before this, shipped orders recorded no destination
+    // address at all.
+    const sessionParams = {
       mode: 'payment',
       line_items,
 
@@ -173,12 +241,20 @@ exports.handler = async (event) => {
 
       metadata: {
         shipping_method: shipping,
+        destination: shipping === 'ship-iq' ? 'IQ' : 'US',
         total_weight_oz: String(Math.round(totalWeightOz * 10) / 10),
         cart_json: JSON.stringify(cart),
       },
 
       customer_email: customerEmail || undefined,
-    });
+    };
+    if (shipping === 'ship-iq') {
+      sessionParams.shipping_address_collection = { allowed_countries: ['IQ'] };
+    } else if (shipping === 'ship') {
+      sessionParams.shipping_address_collection = { allowed_countries: ['US'] };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return response(200, { url: session.url });
   } catch (err) {
