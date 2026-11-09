@@ -21,13 +21,14 @@
         <div id="shipping-options"></div>
       </section>
       <section class="totals">
-        <div>Subtotal: <span id="subtotal-value">$0.00</span></div>
-        <div>Shipping: <span id="shipping-value">Free</span></div>
-        <div>Tax: <span id="tax-value">$0.00</span></div>
-        <div><strong>Total: <span id="order-total-value">$0.00</span></strong></div>
+        <div class="total-row"><span>Subtotal:</span> <span id="subtotal-value">$0.00</span></div>
+        <div class="total-row"><span>Shipping:</span> <span id="shipping-value">Free</span></div>
+        <div class="total-row"><span>Tax (8.25%):</span> <span id="tax-value">$0.00</span></div>
+        <div class="total-row grand"><span><strong>Total:</strong></span> <span id="order-total-value">$0.00</span></div>
       </section>
       <p id="checkout-error" class="error-msg" style="display:none"></p>
       <button id="pay-button" class="btn btn-primary">Pay with Card</button>
+      <p class="stripe-note">Secure checkout with Stripe — you&rsquo;ll enter your name, email and address on the next step.</p>
     </div>
   </main>
 

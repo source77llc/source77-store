@@ -1,14 +1,32 @@
 /* ============================================================
-   Source77 Store — cart.js
+   Source77 Store — cart.js (redesign 2026-11-09)
    Cart logic (localStorage) + cart-page renderer.
    localStorage key: 'source77_cart'  (JSON array of items)
    Item shape: { id, title, condition, price, qty, image, weightLb }
+
+   Redesign changes vs the previous version:
+   - Cart page renders stacked cards (.cart-item), never a
+     squeezed desktop table, on any screen width.
+   - getCartTotals(shipping) exposes the same shipping-tier +
+     8.25% tax math checkout.js uses, so the slide-over cart
+     drawer (nav.js) can show exact totals.
    ============================================================ */
 
 (function () {
   'use strict';
 
   var CART_KEY = 'source77_cart';
+
+  /* Shipping tiers by TOTAL cart weight (oz) — must match
+     checkout.js and the Lambda (the Lambda is the authority
+     at payment time; this is only for display). */
+  var TAX_RATE = 0.0825;
+  var SHIPPING_TIERS = [
+    { maxOz: 15.9999, cents: 599, label: 'under 1 lb' },
+    { maxOz: 80, cents: 899, label: '1-5 lb' },
+    { maxOz: Infinity, cents: 1299, label: 'over 5 lb' }
+  ];
+  var DEFAULT_WEIGHT_OZ = 8;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function readCart() {
@@ -28,14 +46,26 @@
     } catch (e) {
       console.warn('Source77: could not write cart to localStorage', e);
     }
-    // Notify nav badge
+    // Notify nav badge + drawer + bottom bar
     if (typeof window.updateNavCartBadge === 'function') {
       window.updateNavCartBadge();
+    }
+    if (typeof window.renderCartDrawer === 'function') {
+      window.renderCartDrawer();
     }
   }
 
   function formatPrice(num) {
     return '$' + Number(num).toFixed(2);
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   /* ── Public API ────────────────────────────────────────── */
@@ -112,7 +142,6 @@
     }, 0);
   }
 
-  /** clearCart() */
   /** getCartWeightOz() — total packaged weight of the cart, in ounces */
   function getCartWeightOz() {
     return readCart().reduce(function (sum, item) {
@@ -123,6 +152,39 @@
 
   function clearCart() {
     writeCart([]);
+  }
+
+  /* ── Totals (shared by cart page + cart drawer) ────────── */
+  function shippingTierForOz(oz) {
+    for (var i = 0; i < SHIPPING_TIERS.length; i++) {
+      if (oz <= SHIPPING_TIERS[i].maxOz) return SHIPPING_TIERS[i];
+    }
+    return SHIPPING_TIERS[SHIPPING_TIERS.length - 1];
+  }
+
+  /**
+   * getCartTotals(shippingChoice) — 'pickup' (default) or 'ship'.
+   * Returns { subtotal, shipping, tax, total, tierLabel, weightOz }.
+   * Same math as checkout.js: tax 8.25% on subtotal + shipping.
+   */
+  function getCartTotals(shippingChoice) {
+    var items = readCart();
+    var subtotal = getCartTotal();
+    var oz = getCartWeightOz();
+    var tier = shippingTierForOz(oz);
+    var shipping = shippingChoice === 'ship' ? tier.cents / 100 : 0;
+    var tax = (subtotal + shipping) * TAX_RATE;
+    var total = subtotal + shipping + tax;
+    return {
+      subtotal: subtotal,
+      shipping: shipping,
+      tax: tax,
+      total: total,
+      tierLabel: tier.label,
+      tierCents: tier.cents,
+      weightOz: oz,
+      count: getCartCount()
+    };
   }
 
   /* ── Toast helper ──────────────────────────────────────── */
@@ -146,7 +208,7 @@
     }, 2800);
   }
 
-  /* ── Cart Page Renderer ────────────────────────────────── */
+  /* ── Cart Page Renderer (stacked cards, all widths) ────── */
 
   function renderCartPage() {
     var wrap = document.getElementById('cart-page');
@@ -165,58 +227,41 @@
       return;
     }
 
-    var rowsHtml = items.map(function (item) {
+    var cardsHtml = items.map(function (item) {
       var lineTotal = (Number(item.price) * item.qty).toFixed(2);
       var imgHtml = item.image
-        ? '<img src="' + escHtml(item.image) + '" alt="' + escHtml(item.title) + '" style="width:56px;height:56px;object-fit:cover;border-radius:4px;">'
-        : '<span style="font-size:1.75rem;">&#x1F4E6;</span>';
+        ? '<img src="' + escHtml(item.image) + '" alt="' + escHtml(item.title) + '" class="cart-item-img">'
+        : '<span class="cart-item-img-fallback">&#x1F4E6;</span>';
 
       return (
-        '<tr data-id="' + escHtml(item.id) + '">' +
-          '<td style="min-width:200px">' +
-            '<div style="display:flex;align-items:center;gap:.75rem;">' +
-              imgHtml +
-              '<div>' +
-                '<div class="cart-item-title">' + escHtml(item.title) + '</div>' +
-                (item.condition ? '<div class="cart-item-condition">' + escHtml(item.condition) + '</div>' : '') +
+        '<div class="cart-item" data-id="' + escHtml(item.id) + '">' +
+          '<div class="cart-item-media">' + imgHtml + '</div>' +
+          '<div class="cart-item-info">' +
+            '<div class="cart-item-title">' + escHtml(item.title) + '</div>' +
+            (item.condition ? '<div class="cart-item-condition">' + escHtml(item.condition) + '</div>' : '') +
+            '<div class="cart-item-price">' + formatPrice(item.price) + ' each</div>' +
+            '<div class="cart-item-actions">' +
+              '<div class="qty-stepper">' +
+                '<button class="qty-minus" aria-label="Decrease quantity">&#8722;</button>' +
+                '<span class="qty-value">' + item.qty + '</span>' +
+                '<button class="qty-plus" aria-label="Increase quantity">+</button>' +
               '</div>' +
+              '<button class="remove-btn" aria-label="Remove item" title="Remove">&times; Remove</button>' +
             '</div>' +
-          '</td>' +
-          '<td>' + formatPrice(item.price) + '</td>' +
-          '<td>' +
-            '<div class="qty-stepper">' +
-              '<button class="qty-minus" aria-label="Decrease quantity">&#8722;</button>' +
-              '<span class="qty-value">' + item.qty + '</span>' +
-              '<button class="qty-plus" aria-label="Increase quantity">+</button>' +
-            '</div>' +
-          '</td>' +
-          '<td>' + formatPrice(lineTotal) + '</td>' +
-          '<td>' +
-            '<button class="remove-btn" aria-label="Remove item" title="Remove">&times;</button>' +
-          '</td>' +
-        '</tr>'
+          '</div>' +
+          '<div class="cart-item-total">' + formatPrice(lineTotal) + '</div>' +
+        '</div>'
       );
     }).join('');
 
-    var subtotal = getCartTotal();
+    var totals = getCartTotals('pickup');
 
     wrap.innerHTML =
-      '<div class="cart-table-wrap">' +
-        '<table class="cart-table">' +
-          '<thead><tr>' +
-            '<th>Item</th>' +
-            '<th>Price</th>' +
-            '<th>Qty</th>' +
-            '<th>Total</th>' +
-            '<th></th>' +
-          '</tr></thead>' +
-          '<tbody id="cart-tbody">' + rowsHtml + '</tbody>' +
-        '</table>' +
-      '</div>' +
+      '<div class="cart-list">' + cardsHtml + '</div>' +
       '<div class="cart-summary">' +
-        '<div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">' + formatPrice(subtotal) + '</span></div>' +
+        '<div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">' + formatPrice(totals.subtotal) + '</span></div>' +
         '<div class="summary-row"><span>Shipping</span><span>Calculated at checkout</span></div>' +
-        '<div class="summary-row total"><span>Estimated Total</span><span id="cart-total">' + formatPrice(subtotal) + '</span></div>' +
+        '<div class="summary-row total"><span>Estimated Total</span><span id="cart-total">' + formatPrice(totals.subtotal) + '</span></div>' +
         '<a href="checkout.html" class="btn btn-primary checkout-btn btn-lg">Proceed to Checkout</a>' +
       '</div>';
 
@@ -224,23 +269,15 @@
     bindCartEvents(wrap);
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
   function bindCartEvents(wrap) {
     wrap.addEventListener('click', function (e) {
-      var row = e.target.closest('tr[data-id]');
-      if (!row) return;
-      var id = row.getAttribute('data-id');
+      var card = e.target.closest('.cart-item[data-id]');
+      if (!card) return;
+      var id = card.getAttribute('data-id');
 
       // Remove button
-      if (e.target.classList.contains('remove-btn')) {
+      if (e.target.classList.contains('remove-btn') ||
+          e.target.closest('.remove-btn')) {
         removeFromCart(id);
         renderCartPage();
         return;
@@ -248,7 +285,7 @@
 
       // Qty minus
       if (e.target.classList.contains('qty-minus')) {
-        var qtySpan = row.querySelector('.qty-value');
+        var qtySpan = card.querySelector('.qty-value');
         var current = parseInt(qtySpan.textContent, 10) || 1;
         updateQty(id, current - 1);
         renderCartPage();
@@ -257,7 +294,7 @@
 
       // Qty plus
       if (e.target.classList.contains('qty-plus')) {
-        var qtySpanPlus = row.querySelector('.qty-value');
+        var qtySpanPlus = card.querySelector('.qty-value');
         var currentPlus = parseInt(qtySpanPlus.textContent, 10) || 1;
         updateQty(id, currentPlus + 1);
         renderCartPage();
@@ -280,6 +317,7 @@
     getCartCount:   getCartCount,
     getCartTotal:   getCartTotal,
     getCartWeightOz: getCartWeightOz,
+    getCartTotals:  getCartTotals,
     clearCart:      clearCart,
     renderCartPage: renderCartPage,
     showToast:      showToast

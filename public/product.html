@@ -21,6 +21,7 @@
           alt=""
           class="product-image"
         />
+        <div id="product-thumbs" class="product-thumbs" role="group" aria-label="Product photos"></div>
       </div>
 
       <!-- Product Info -->
@@ -32,6 +33,8 @@
           <span id="product-stock" class="stock-badge out-of-stock" style="display:none">Out of stock</span>
           <span id="product-price" class="product-price"></span>
         </div>
+
+        <div id="product-fulfillment" class="fulfillment-badge local"></div>
 
         <div id="product-description" class="product-description"></div>
 
@@ -60,7 +63,6 @@
 
   <script src="/js/config.js" defer></script>
   <script src="/js/nav.js" defer></script>
-  <script src="/js/products-seed.js" defer></script>
   <script src="/js/cart.js" defer></script>
   <script defer>
     (function () {
@@ -79,10 +81,6 @@
         return map[c] || c || 'Unknown';
       }
 
-      function formatPrice(cents) {
-        return '$' + (cents / 100).toFixed(2);
-      }
-
       function populate(product) {
         document.title = product.title + ' – Source77 Store';
 
@@ -92,16 +90,51 @@
         const priceEl = document.getElementById('product-price');
         const descEl = document.getElementById('product-description');
         const weightEl = document.getElementById('product-weight');
+        const fulfilEl = document.getElementById('product-fulfillment');
         const btn = document.getElementById('add-to-cart-btn');
 
         titleEl.textContent = product.title;
-        var imgSrc = (product.images && product.images[0]) || product.image_url || product.image;
-        if (imgSrc) {
-          imgEl.src = imgSrc;
+
+        // Images: main + thumbnail strip; a broken main image falls
+        // through to the next image instead of staying broken.
+        var imgs = (product.images && product.images.length)
+          ? product.images.slice()
+          : ((product.image_url || product.image) ? [product.image_url || product.image] : []);
+        var imgIdx = 0;
+        function showImage(i) {
+          imgIdx = i;
+          imgEl.src = imgs[i];
           imgEl.alt = product.title;
+          var thumbs = document.querySelectorAll('#product-thumbs .product-thumb');
+          thumbs.forEach(function (t, j) {
+            t.classList.toggle('active', j === i);
+            t.setAttribute('aria-current', j === i ? 'true' : 'false');
+          });
+        }
+        imgEl.onerror = function () {
+          if (imgIdx + 1 < imgs.length) { showImage(imgIdx + 1); }
+          else { imgEl.style.display = 'none'; }
+        };
+        if (imgs.length) {
+          showImage(0);
         } else {
           imgEl.style.display = 'none';
         }
+        var thumbsWrap = document.getElementById('product-thumbs');
+        if (thumbsWrap) {
+          thumbsWrap.innerHTML = imgs.map(function (src, i) {
+            return '<button type="button" class="product-thumb' + (i === 0 ? ' active' : '') +
+              '" data-idx="' + i + '" aria-label="View photo ' + (i + 1) + '">' +
+              '<img src="' + src.replace(/"/g, '&quot;') + '" alt="" loading="lazy"></button>';
+          }).join('');
+          thumbsWrap.addEventListener('click', function (e) {
+            var t = e.target.closest('.product-thumb');
+            if (!t) return;
+            imgEl.style.display = '';
+            showImage(parseInt(t.getAttribute('data-idx'), 10) || 0);
+          });
+        }
+
         condEl.textContent = conditionLabel((product.condition || '').toLowerCase());
         condEl.dataset.condition = product.condition || '';
         priceEl.textContent = '$' + Number(product.price || 0).toFixed(2);
@@ -110,6 +143,15 @@
           weightEl.textContent = 'Shipping weight: ' + product.weight_lb + ' lbs';
         } else {
           weightEl.style.display = 'none';
+        }
+        if (fulfilEl) {
+          if (product.fulfillment === 'direct') {
+            fulfilEl.className = 'fulfillment-badge direct';
+            fulfilEl.textContent = '🚚 Ships directly to you';
+          } else {
+            fulfilEl.className = 'fulfillment-badge local';
+            fulfilEl.textContent = '📍 Local pickup available';
+          }
         }
 
         // Out of stock: quantity is a number at or below zero.
@@ -160,12 +202,6 @@
       function init() {
         var id = getParam('id');
         if (!id) { showError('No product specified.'); return; }
-
-        // Try seed data first
-        if (window.SEED_PRODUCTS) {
-          var found = window.SEED_PRODUCTS.find(function (p) { return String(p.id) === String(id); });
-          if (found) { populate(found); return; }
-        }
 
         // Try API if configured
         var apiBase = (window.CONFIG && window.CONFIG.API_BASE_URL) ? window.CONFIG.API_BASE_URL : null;
