@@ -4,6 +4,11 @@
 // CHANGE 2026-11-03: flat $8.99 shipping replaced by weight tiers, and
 // Texas sales tax now applies to subtotal + shipping (it used to apply
 // to the subtotal only). Local pickup stays free. Nothing else changed.
+// CHANGE 2026-11-09: digital delivery mode. A digital-only cart sends
+// shipping 'digital': $0 shipping, tax on the subtotal only (the tax
+// formula is unchanged — shipping is 0, so the base is the subtotal).
+// The Lambda rejects 'digital' unless every cart item is digital
+// (fulfillment 'digital'). Mixed carts check out as pickup/ship.
 // Runtime stays Node.js 18 (the Node 20/22 bump rides with the next
 // backend change, hard date 2027-02-01).
 
@@ -67,8 +72,21 @@ exports.handler = async (event) => {
       return response(400, { error: 'cart is required and must be a non-empty array' });
     }
 
-    if (!['pickup', 'ship'].includes(shipping)) {
-      return response(400, { error: "shipping must be 'pickup' or 'ship'" });
+    if (!['pickup', 'ship', 'digital'].includes(shipping)) {
+      return response(400, { error: "shipping must be 'pickup', 'ship' or 'digital'" });
+    }
+
+    // Digital mode is digital-only: every item must be a download.
+    // (The frontend only offers it for all-digital carts; this is
+    // the server-side backstop so a crafted request cannot get
+    // $0 shipping on physical goods.)
+    if (shipping === 'digital') {
+      var nonDigital = cart.filter(function (item) {
+        return item.fulfillment !== 'digital';
+      });
+      if (nonDigital.length > 0) {
+        return response(400, { error: "shipping 'digital' requires an all-digital cart" });
+      }
     }
 
     // Build line_items from cart
@@ -96,15 +114,22 @@ exports.handler = async (event) => {
     // NOTE: like item prices, weights here are client-supplied. A
     // future hardening step is to look weights up server-side from
     // the Products table instead of trusting the request.
+    // NOTE 2026-11-09: weightOz 0 is a real value (digital items) —
+    // the old `|| DEFAULT_WEIGHT_OZ` fallback would have turned a
+    // download into 8 oz. Use an explicit NaN check instead.
     const totalWeightOz = cart.reduce(
-      (sum, item) =>
-        sum + (Number(item.weightOz) || DEFAULT_WEIGHT_OZ) * (item.quantity || 1),
+      (sum, item) => {
+        var w = Number(item.weightOz);
+        return sum + (isNaN(w) ? DEFAULT_WEIGHT_OZ : w) * (item.quantity || 1);
+      },
       0
     );
 
-    // Shipping line item: free for pickup, weight tier for ship
+    // Shipping line item: free for pickup, weight tier for ship,
+    // $0 for digital (instant download — nothing to deliver).
     const tier = shippingTier(totalWeightOz);
-    const shippingCents = shipping === 'pickup' ? 0 : tier.cents;
+    const shippingCents = shipping === 'digital' ? 0
+      : shipping === 'pickup' ? 0 : tier.cents;
 
     if (shippingCents > 0) {
       line_items.push({
@@ -122,7 +147,8 @@ exports.handler = async (event) => {
     // Tax line item: 8.25% on subtotal + shipping.
     // Texas taxes delivery charges when the sale itself is taxable,
     // so shipping joins the tax base. Pickup orders have $0 shipping,
-    // so their tax is unchanged from before.
+    // so their tax is unchanged from before. Digital orders also
+    // have $0 shipping, so their tax is on the subtotal only.
     const taxCents = Math.round((subtotalCents + shippingCents) * TAX_RATE);
 
     if (taxCents > 0) {
