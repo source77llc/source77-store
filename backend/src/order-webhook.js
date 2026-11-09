@@ -55,11 +55,25 @@ exports.handler = async (event) => {
         console.error('Failed to parse cart_json from metadata:', parseErr.message);
       }
 
+      // Shipping address comes from Stripe's shipping_details, which
+      // is only present when the checkout session collected one
+      // (US 'ship' and Iraq 'ship-iq' orders, since 2026-11-09).
+      // Pickup/digital orders have no shipping address (null).
+      // CHANGE 2026-11-09: record destination + shipping address so
+      // shipped orders are fulfillable from the order record.
       const order = {
         id: session.id,
         customerEmail: session.customer_email || '',
         amount_total: session.amount_total,
         shipping_method: session.metadata.shipping_method || '',
+        destination: (session.metadata && session.metadata.destination)
+          || (session.metadata && session.metadata.shipping_method) || '',
+        shipping_address: session.shipping_details
+          ? {
+              name: session.shipping_details.name || '',
+              address: session.shipping_details.address || {},
+            }
+          : null,
         items,
         status: 'new',
         createdAt: new Date().toISOString(),
