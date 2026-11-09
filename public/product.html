@@ -54,6 +54,9 @@
           <button id="add-to-cart-btn" class="btn btn-primary" disabled>
             Add to Cart
           </button>
+          <button id="share-btn" type="button" class="btn btn-secondary" aria-label="Share this item">
+            &#8599; Share
+          </button>
         </div>
       </div>
     </div>
@@ -79,6 +82,30 @@
           salvage: 'Salvage / Parts',
         };
         return map[c] || c || 'Unknown';
+      }
+
+      function copyItemLink(url, btn) {
+        function done() {
+          var old = btn.textContent;
+          btn.textContent = 'Link copied!';
+          setTimeout(function () { btn.textContent = old; }, 2000);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done, function () { fallbackCopy(url, done); });
+        } else {
+          fallbackCopy(url, done);
+        }
+      }
+      function fallbackCopy(text, done) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done();
       }
 
       function populate(product) {
@@ -205,11 +232,27 @@
             setTimeout(function () { btn.textContent = 'Add to Cart'; }, 1500);
           }
         });
+        // Share: native share sheet on phones (WhatsApp, Messenger, SMS…),
+        // otherwise copy the item link.
+        var shareBtn = document.getElementById('share-btn');
+        if (shareBtn) {
+          shareBtn.addEventListener('click', function () {
+            var url = window.location.href;
+            var text = product.title + ' – $' + Number(product.price || 0).toFixed(2) + ' – Source77 Store';
+            if (navigator.share) {
+              navigator.share({ title: product.title, text: text, url: url }).catch(function () {});
+            } else {
+              copyItemLink(url, shareBtn);
+            }
+          });
+        }
       }
 
       function showError(msg) {
         document.getElementById('product-title').textContent = msg;
         document.getElementById('add-to-cart-btn').style.display = 'none';
+        var shareBtn = document.getElementById('share-btn');
+        if (shareBtn) shareBtn.style.display = 'none';
       }
 
       function init() {
