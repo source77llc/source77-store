@@ -37,6 +37,11 @@
   const IRAQ_MAX_OZ = 64; // 4 lb
   const IRAQ_MAX_VALUE = 400; // dollars
 
+  // Iraq shipping goes live only after the CheckoutFunction Lambda
+  // deploy (computer session) — the live Lambda still rejects
+  // 'ship-iq' until then. Flip to true right after that deploy.
+  const IRAQ_SHIPPING_LIVE = false;
+
   function cartWeightOz(cart) {
     return cart.reduce(function (sum, item) {
       if (item.fulfillment === 'digital') return sum; // downloads weigh 0
@@ -82,6 +87,7 @@
   // or under. Rates above 4 lb are not verified, so the option
   // is hidden rather than priced from a guess.
   function iraqEligible(cart) {
+    if (!IRAQ_SHIPPING_LIVE) return false;
     return hasPhysicalItems(cart)
       && cartWeightOz(cart) <= IRAQ_MAX_OZ
       && cartSubtotal(cart) <= IRAQ_MAX_VALUE;
