@@ -16,6 +16,27 @@
   ];
   const DEFAULT_WEIGHT_OZ = 8; // 0.5 lb store default, per unit
 
+  // Iraq shipping — Pirate Ship Simple Export Rate, Rest of World
+  // band, by TOTAL cart weight (oz). Must match the Lambda
+  // (backend/src/create-checkout-session.js) — the Lambda is the
+  // authority at payment time; this is only for display.
+  // Rates verified Nov 2026: up to 0.5 lb $14.99, 1 lb $18.99,
+  // 2 lb $24.00 (live Pirate Ship SER quotes / rate tables);
+  // 3 lb $43.20, 4 lb $52.85 (2026 rate chart, Germany column —
+  // highest European Rest-of-World country, used as the
+  // conservative proxy so the store never undercharges).
+  // SER caps: max 4 lb total, max $400 cart value. Above either,
+  // the Iraq option is not offered.
+  const IRAQ_TIERS = [
+    { maxOz: 8, cents: 1499, label: 'up to 0.5 lb' },
+    { maxOz: 16, cents: 1899, label: 'up to 1 lb' },
+    { maxOz: 32, cents: 2400, label: 'up to 2 lb' },
+    { maxOz: 48, cents: 4320, label: 'up to 3 lb' },
+    { maxOz: 64, cents: 5285, label: 'up to 4 lb' }
+  ];
+  const IRAQ_MAX_OZ = 64; // 4 lb
+  const IRAQ_MAX_VALUE = 400; // dollars
+
   function cartWeightOz(cart) {
     return cart.reduce(function (sum, item) {
       if (item.fulfillment === 'digital') return sum; // downloads weigh 0
@@ -40,6 +61,30 @@
       if (oz <= SHIPPING_TIERS[i].maxOz) return SHIPPING_TIERS[i];
     }
     return SHIPPING_TIERS[SHIPPING_TIERS.length - 1];
+  }
+
+  function hasPhysicalItems(cart) {
+    return cart.some(function (item) {
+      return item.fulfillment !== 'digital';
+    });
+  }
+
+  function iraqTier(cart) {
+    var oz = cartWeightOz(cart);
+    for (var i = 0; i < IRAQ_TIERS.length; i++) {
+      if (oz <= IRAQ_TIERS[i].maxOz) return IRAQ_TIERS[i];
+    }
+    return null;
+  }
+
+  // Iraq is offered only when the cart fits the SER limits:
+  // physical goods, total weight 4 lb or under, cart value $400
+  // or under. Rates above 4 lb are not verified, so the option
+  // is hidden rather than priced from a guess.
+  function iraqEligible(cart) {
+    return hasPhysicalItems(cart)
+      && cartWeightOz(cart) <= IRAQ_MAX_OZ
+      && cartSubtotal(cart) <= IRAQ_MAX_VALUE;
   }
 
   /* ------------------------------------------------------------------ */
@@ -140,6 +185,23 @@
     var tier = shippingTier(cart || []);
     var shipDollars = '$' + (tier.cents / 100).toFixed(2);
 
+    // Ship to Iraq (Pirate Ship Simple Export Rate) — only when
+    // the cart fits the SER limits. The value 'ship-iq' is what
+    // the Lambda expects; US pickup/ship are unchanged.
+    var iraqHtml = '';
+    if (iraqEligible(cart)) {
+      var iqTier = iraqTier(cart);
+      var iqDollars = '$' + (iqTier.cents / 100).toFixed(2);
+      iraqHtml =
+        '<label class="shipping-card">' +
+          '<input type="radio" name="shipping" value="ship-iq"> ' +
+          '<span class="shipping-card__body">' +
+            '<strong>Ship to Iraq &ndash; ' + iqDollars + ' (' + iqTier.label + ')</strong>' +
+            '<span class="shipping-card__detail">Buyer pays Iraq customs/duties on delivery. Delivery 1&ndash;4 weeks, tracked.</span>' +
+          '</span>' +
+        '</label>';
+    }
+
     container.innerHTML =
       '<label class="shipping-card">' +
         '<input type="radio" name="shipping" value="pickup" checked> ' +
@@ -154,7 +216,8 @@
           '<strong>Ship to me &ndash; ' + shipDollars + ' (' + tier.label + ')</strong>' +
           '<span class="shipping-card__detail">By total cart weight: under 1 lb $5.99, 1-5 lb $8.99, over 5 lb $12.99</span>' +
         '</span>' +
-      '</label>';
+      '</label>' +
+      iraqHtml;
   }
 
   /* ------------------------------------------------------------------ */
@@ -171,13 +234,19 @@
   function recalcTotals(cart) {
     const subtotal = cartSubtotal(cart);
     const shippingChoice = getSelectedShipping();
-    const shippingCost = shippingChoice === 'ship'
-      ? shippingTier(cart).cents / 100 : 0;
+    var shippingCost = 0;
+    if (shippingChoice === 'ship') {
+      shippingCost = shippingTier(cart).cents / 100;
+    } else if (shippingChoice === 'ship-iq') {
+      var iqTier = iraqTier(cart);
+      shippingCost = iqTier ? iqTier.cents / 100 : 0;
+    }
 
     // Texas taxes delivery, so shipping joins the tax base.
     // Digital orders have $0 shipping, so their tax is on the
     // subtotal only — the same formula with shipping = 0.
-    const tax = (subtotal + shippingCost) * TAX_RATE;
+    // Iraq orders are not Texas sales — $0 tax.
+    const tax = shippingChoice === 'ship-iq' ? 0 : (subtotal + shippingCost) * TAX_RATE;
     const total = subtotal + shippingCost + tax;
 
     setText('subtotal-value', '$' + subtotal.toFixed(2));
