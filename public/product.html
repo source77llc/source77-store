@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Product – Source77 Store</title>
   <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .product-title-row { display: flex; align-items: flex-start; gap: 0.75rem; }
+    .product-title-row .product-title { flex: 1; }
+    .share-icon-btn {
+      flex: 0 0 auto;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-top: 0.1rem;
+    }
+    .share-icon-btn:hover { background: var(--ink); color: var(--paper); }
+    .share-icon-btn.copied { background: var(--sage); border-color: var(--sage); color: #fff; }
+  </style>
 </head>
 <body>
   <div id="nav-placeholder"></div>
@@ -26,7 +45,12 @@
 
       <!-- Product Info -->
       <div class="product-info">
-        <h1 id="product-title" class="product-title">Loading&hellip;</h1>
+        <div class="product-title-row">
+          <h1 id="product-title" class="product-title">Loading&hellip;</h1>
+          <button id="share-btn-top" type="button" class="share-icon-btn" aria-label="Share this item" title="Share this item">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+          </button>
+        </div>
 
         <div class="product-meta">
           <span id="product-condition" class="condition-badge"></span>
@@ -86,9 +110,15 @@
 
       function copyItemLink(url, btn) {
         function done() {
-          var old = btn.textContent;
-          btn.textContent = 'Link copied!';
-          setTimeout(function () { btn.textContent = old; }, 2000);
+          if (btn.classList.contains('share-icon-btn')) {
+            btn.classList.add('copied');
+            btn.setAttribute('title', 'Link copied!');
+            setTimeout(function () { btn.classList.remove('copied'); }, 2000);
+          } else {
+            var old = btn.textContent;
+            btn.textContent = 'Link copied!';
+            setTimeout(function () { btn.textContent = old; }, 2000);
+          }
         }
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(done, function () { fallbackCopy(url, done); });
@@ -233,19 +263,21 @@
           }
         });
         // Share: native share sheet on phones (WhatsApp, Messenger, SMS…),
-        // otherwise copy the item link.
-        var shareBtn = document.getElementById('share-btn');
-        if (shareBtn) {
-          shareBtn.addEventListener('click', function () {
-            var url = window.location.href;
-            var text = product.title + ' – $' + Number(product.price || 0).toFixed(2) + ' – Source77 Store';
-            if (navigator.share) {
-              navigator.share({ title: product.title, text: text, url: url }).catch(function () {});
-            } else {
-              copyItemLink(url, shareBtn);
-            }
-          });
+        // otherwise copy the item link. Both the top icon (like eBay)
+        // and the button next to Add to Cart do the same thing.
+        function shareItem(btn) {
+          var url = window.location.href;
+          var text = product.title + ' – $' + Number(product.price || 0).toFixed(2) + ' – Source77 Store';
+          if (navigator.share) {
+            navigator.share({ title: product.title, text: text, url: url }).catch(function () {});
+          } else {
+            copyItemLink(url, btn);
+          }
         }
+        ['share-btn', 'share-btn-top'].forEach(function (id) {
+          var b = document.getElementById(id);
+          if (b) b.addEventListener('click', function () { shareItem(b); });
+        });
       }
 
       function showError(msg) {
@@ -253,6 +285,8 @@
         document.getElementById('add-to-cart-btn').style.display = 'none';
         var shareBtn = document.getElementById('share-btn');
         if (shareBtn) shareBtn.style.display = 'none';
+        var shareTop = document.getElementById('share-btn-top');
+        if (shareTop) shareTop.style.display = 'none';
       }
 
       function init() {
