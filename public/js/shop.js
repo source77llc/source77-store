@@ -15,17 +15,7 @@
   var currentSort = 'featured';
   var allProducts = [];
 
-  /* ── Condition badge helper ────────────────────────────── */
-  function conditionClass(condition) {
-    if (!condition) return 'new';
-    var c = condition.toLowerCase();
-    if (c.includes('open box') || c.includes('open-box')) return 'open-box';
-    if (c.includes('used') && c.includes('good')) return 'used-good';
-    if (c.includes('used') && c.includes('fair')) return 'used-fair';
-    if (c.includes('used')) return 'used-good';
-    return 'new';
-  }
-
+  /* ── Helpers ───────────────────────────────────────────── */
   function escHtml(str) {
     return String(str)
       .replace(/&/g, '&amp;')
@@ -42,8 +32,6 @@
     var imgHtml = (product.images && product.images.length > 0)
       ? '<img src="' + escHtml(product.images[0]) + '" alt="' + escHtml(product.title) + '" loading="lazy">'
       : '<span class="no-image">&#x1F4E6;</span>';
-
-    var badgeCls = conditionClass(product.condition);
 
     // Out of stock: quantity is a number at or below zero. Products without a
     // quantity field keep the current behavior (treated as in stock).
@@ -67,7 +55,6 @@
         '<div class="card-body p-body">' +
           '<span class="p-cat">' + escHtml(product.category || 'General Merchandise') + '</span>' +
           '<span class="card-title p-name">' + escHtml(product.title) + '</span>' +
-          '<span class="condition-badge ' + badgeCls + '">' + escHtml(product.condition || 'New') + '</span>' +
           (outOfStock ? '<span class="stock-badge out-of-stock">Out of stock</span>' : '') +
           '<div class="card-price p-price"><span class="amt">' + money(product.price) + '</span>' +
           '<span class="ship">' + shipNote + '</span></div>' +
