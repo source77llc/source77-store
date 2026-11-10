@@ -1468,3 +1468,8 @@ textarea { resize: vertical; min-height: 100px; }
 /* ── Checkout totals + Stripe note (checkout.html) ─────── */
 .totals .total-row.grand { border-top: 2px solid var(--line); padding-top: .6rem; font-size: 1.15rem; }
 .stripe-note { color: var(--muted); font-size: .9rem; margin-top: .75rem; }
+
+/* Category icons: uniform inline SVGs (48x48 viewBox) + Herbalife logo */
+.category-icon svg { width: 56px; height: 56px; }
+.category-icon.logo-icon { background: #fff; }
+.category-card .category-icon img { width: auto; height: auto; max-width: 85%; max-height: 72px; object-fit: contain; }
