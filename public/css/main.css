@@ -1473,3 +1473,4 @@ textarea { resize: vertical; min-height: 100px; }
 .category-icon svg { width: 56px; height: 56px; }
 .category-icon.logo-icon { background: #fff; }
 .category-card .category-icon img { width: auto; height: auto; max-width: 85%; max-height: 72px; object-fit: contain; }
+.category-icon { overflow: hidden; }
