@@ -40,7 +40,7 @@
   // Iraq shipping goes live only after the CheckoutFunction Lambda
   // deploy (computer session) — the live Lambda still rejects
   // 'ship-iq' until then. Flip to true right after that deploy.
-  const IRAQ_SHIPPING_LIVE = false;
+  const IRAQ_SHIPPING_LIVE = true;
 
   function cartWeightOz(cart) {
     return cart.reduce(function (sum, item) {
