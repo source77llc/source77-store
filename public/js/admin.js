@@ -142,7 +142,7 @@
       '<div id="products-table-container"></div>';
 
     document.getElementById('add-product-btn').addEventListener('click', function () {
-      showProductForm(null, function () { loadProducts(); });
+      showProductForm(null, function () { loadProducts(); }, products);
     });
 
     renderProductsTable(products);
@@ -195,7 +195,7 @@
       btn.addEventListener('click', function () {
         const id = btn.dataset.id;
         const product = products.find(function (p) { return String(p.id) === id; });
-        if (product) showProductForm(product, function () { loadProducts(); });
+        if (product) showProductForm(product, function () { loadProducts(); }, products);
       });
     });
 
@@ -212,7 +212,8 @@
     });
   }
 
-  function showProductForm(product, onSave) {
+  // products: the list as loaded (used to assign the next item-NNN id).
+  function showProductForm(product, onSave, products) {
     const container = document.getElementById('product-form-container');
     if (!container) return;
 
@@ -272,26 +273,60 @@
         quantity: parseInt(form.quantity.value, 10),
         description: form.description.value.trim(),
         image_url: form.image_url.value.trim() || null,
+        // FIX (2026-11-16): the form has a fulfillment select but the old
+        // code never sent it — new products got no fulfillment value.
+        fulfillment: form.fulfillment.value || 'local',
         shipping: form.shipping.checked
       };
+      // Storefront renders images[0] as the card image; keep the gallery
+      // in sync when only a single image URL is given.
+      if (data.image_url) {
+        data.images = [data.image_url];
+      }
 
       const errEl = document.getElementById('product-form-error');
       const submitBtn = form.querySelector('[type="submit"]');
       submitBtn.disabled = true;
       errEl.style.display = 'none';
 
-      const req = isEdit
-        ? apiFetch('/products/' + encodeURIComponent(product.id), { method: 'PUT', body: JSON.stringify(data) })
-        : apiFetch('/products', { method: 'POST', body: JSON.stringify(data) });
+      function doSave() {
+        const req = isEdit
+          ? apiFetch('/products/' + encodeURIComponent(product.id), { method: 'PUT', body: JSON.stringify(data) })
+          : apiFetch('/products', { method: 'POST', body: JSON.stringify(data) });
 
-      req
-        .then(function () {
-          container.innerHTML = '';
-          if (onSave) onSave();
+        req
+          .then(function () {
+            container.innerHTML = '';
+            if (onSave) onSave();
+          })
+          .catch(function (err) {
+            submitBtn.disabled = false;
+            errEl.textContent = err.message;
+            errEl.style.display = 'block';
+          });
+      }
+
+      if (isEdit) {
+        doSave();
+        return;
+      }
+
+      // FIX (2026-11-16): POST /products requires an `id` and the old form
+      // sent none (400 every time). Take the next free item-NNN from a
+      // FRESH read so a product added elsewhere cannot collide.
+      apiFetch('/products')
+        .then(function (fresh) {
+          let max = 0;
+          (fresh || []).forEach(function (p) {
+            const m = /^item-(\d+)$/.exec(String(p.id || ''));
+            if (m) max = Math.max(max, parseInt(m[1], 10));
+          });
+          data.id = 'item-' + (max + 1);
+          doSave();
         })
         .catch(function (err) {
           submitBtn.disabled = false;
-          errEl.textContent = err.message;
+          errEl.textContent = 'Could not assign an item number: ' + err.message;
           errEl.style.display = 'block';
         });
     });
@@ -347,7 +382,8 @@
       return;
     }
 
-    const statusOptions = ['new', 'shipped', 'picked up'];
+    // FIX (2026-11-16): 'fulfilled' added to match the extended PATCH.
+    const statusOptions = ['new', 'shipped', 'picked up', 'fulfilled'];
 
     let html =
       '<table class="admin-table">' +
@@ -356,6 +392,7 @@
           '<th>Email</th>' +
           '<th>Amount</th>' +
           '<th>Shipping</th>' +
+          '<th>Tracking</th>' +
           '<th>Status</th>' +
           '<th>Date</th>' +
           '<th>Actions</th>' +
@@ -369,16 +406,23 @@
           (o.status === s ? ' selected' : '') + '>' + escapeHtml(s) + '</option>';
       }).join('');
 
-      const dateStr = o.created_at
-        ? new Date(o.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      // FIX (2026-11-16): the webhook writes customerEmail / amount_total
+      // (cents) / shipping_method / createdAt — the old code read email /
+      // amount / shipping / created_at, so every cell showed blank.
+      const dateStr = o.createdAt
+        ? new Date(o.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+        : '';
+      const trackingTitle = o.supplier_order_id
+        ? 'Supplier order: ' + o.supplier_order_id
         : '';
 
       html +=
         '<tr data-order-id="' + escapeHtml(String(o.id)) + '">' +
           '<td title="' + escapeHtml(String(o.id)) + '">' + escapeHtml(shortId) + '</td>' +
-          '<td>' + escapeHtml(o.email || '') + '</td>' +
-          '<td>$' + parseFloat(o.amount || 0).toFixed(2) + '</td>' +
-          '<td>' + escapeHtml(o.shipping || '') + '</td>' +
+          '<td>' + escapeHtml(o.customerEmail || '') + '</td>' +
+          '<td>$' + parseFloat((o.amount_total || 0) / 100).toFixed(2) + '</td>' +
+          '<td>' + escapeHtml(o.shipping_method || '') + '</td>' +
+          '<td title="' + escapeHtml(trackingTitle) + '">' + escapeHtml(o.tracking_number || '') + '</td>' +
           '<td>' +
             '<select class="status-select" data-order-id="' + escapeHtml(String(o.id)) + '">' +
               optionsHtml +

@@ -4,12 +4,14 @@ Description: Source77 Store Backend
 
 Globals:
   Function:
-    Runtime: nodejs18.x
+    # Node 20 bump bundled with this change (standing plan; no new Node 18
+    # functions after 2027-02-01). Stripe v14 + AWS SDK v3 both support it.
+    Runtime: nodejs20.x
     Timeout: 10
   Api:
     Cors:
       AllowOrigin: "'*'"
-      AllowHeaders: "'Content-Type,x-admin-key'"
+      AllowHeaders: "'Content-Type,x-admin-key,x-bridge-key'"
       AllowMethods: "'GET,POST,PUT,DELETE,PATCH,OPTIONS'"
 
 Resources:
@@ -50,6 +52,9 @@ Resources:
         Variables:
           PRODUCTS_TABLE: !Ref ProductsTable
           ADMIN_KEY: REPLACE_WITH_YOUR_ADMIN_KEY
+          # Bridge credential (spec §5.1). Set the REAL value in the Lambda
+          # console after deploy (see README) — never commit a real key here.
+          BRIDGE_KEY: REPLACE_WITH_YOUR_BRIDGE_KEY
       Events:
         ListProducts:
           Type: Api
@@ -60,6 +65,16 @@ Resources:
           Type: Api
           Properties:
             Path: /products
+            Method: POST
+        BulkImportProducts:
+          Type: Api
+          Properties:
+            Path: /products/bulk
+            Method: POST
+        UpsertProduct:
+          Type: Api
+          Properties:
+            Path: /products/upsert
             Method: POST
         GetProduct:
           Type: Api
@@ -80,6 +95,16 @@ Resources:
           Type: Api
           Properties:
             Path: /products
+            Method: OPTIONS
+        OptionsProductsBulk:
+          Type: Api
+          Properties:
+            Path: /products/bulk
+            Method: OPTIONS
+        OptionsProductsUpsert:
+          Type: Api
+          Properties:
+            Path: /products/upsert
             Method: OPTIONS
         OptionsProductsId:
           Type: Api
@@ -115,11 +140,15 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OrdersTable
+        # Stock decrement (spec §5.6) needs write access to ProductsTable.
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Environment:
         Variables:
           STRIPE_SECRET_KEY: REPLACE_WITH_YOUR_STRIPE_SECRET_KEY
           STRIPE_WEBHOOK_SECRET: REPLACE_WITH_YOUR_STRIPE_WEBHOOK_SECRET
           ORDERS_TABLE: !Ref OrdersTable
+          PRODUCTS_TABLE: !Ref ProductsTable
       Events:
         StripeWebhook:
           Type: Api
@@ -138,6 +167,9 @@ Resources:
         Variables:
           ORDERS_TABLE: !Ref OrdersTable
           ADMIN_KEY: REPLACE_WITH_YOUR_ADMIN_KEY
+          # Bridge credential (spec §5.1). Set the REAL value in the Lambda
+          # console after deploy (see README) — never commit a real key here.
+          BRIDGE_KEY: REPLACE_WITH_YOUR_BRIDGE_KEY
       Events:
         ListOrders:
           Type: Api
@@ -163,6 +195,40 @@ Resources:
           Type: Api
           Properties:
             Path: /orders/{id}
+            Method: OPTIONS
+
+  # ─── Bridge health (spec §5.8) ──────────────────────────────────────────
+  # NEW Lambda for the AppScenic bridge. Read-only; answers GET /bridge/health
+  # so the bridge can prove the website side is up before syncing.
+
+  BridgeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/bridge.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref OrdersTable
+      Environment:
+        Variables:
+          PRODUCTS_TABLE: !Ref ProductsTable
+          ORDERS_TABLE: !Ref OrdersTable
+          ADMIN_KEY: REPLACE_WITH_YOUR_ADMIN_KEY
+          # Bridge credential (spec §5.1). Set the REAL value in the Lambda
+          # console after deploy (see README) — never commit a real key here.
+          BRIDGE_KEY: REPLACE_WITH_YOUR_BRIDGE_KEY
+          BACKEND_VERSION: '1.1.0-bridge'
+      Events:
+        BridgeHealth:
+          Type: Api
+          Properties:
+            Path: /bridge/health
+            Method: GET
+        OptionsBridgeHealth:
+          Type: Api
+          Properties:
+            Path: /bridge/health
             Method: OPTIONS
 
 # ─── Outputs ────────────────────────────────────────────────────────────────
