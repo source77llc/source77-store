@@ -37,10 +37,12 @@
   const IRAQ_MAX_OZ = 64; // 4 lb
   const IRAQ_MAX_VALUE = 400; // dollars
 
-  // Iraq shipping goes live only after the CheckoutFunction Lambda
-  // deploy (computer session) — the live Lambda still rejects
-  // 'ship-iq' until then. Flip to true right after that deploy.
-  const IRAQ_SHIPPING_LIVE = true;
+  // Iraq shipping OFF as of Nov 17, 2026 — Iraqi Post charges gumruk
+  // (customs) on arrival even on small personal orders, which should
+  // only apply to big commercial shipments. USPS / Pirate Ship SER
+  // excluded for now. Flip back to true only when a non-USPS carrier
+  // (or a gumruk-free route) is set up.
+  const IRAQ_SHIPPING_LIVE = false;
 
   function cartWeightOz(cart) {
     return cart.reduce(function (sum, item) {
