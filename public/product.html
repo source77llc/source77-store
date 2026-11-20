@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Product – Source77 Store</title>
+  <meta name="description" content="Shop this item at Source77 Store in San Antonio, TX — inspected and condition-noted, with free local pickup or fast shipping." />
+  <link rel="canonical" href="https://source77llc.com/shop.html" />
+  <meta property="og:type" content="product" />
+  <meta property="og:site_name" content="Source77 Store" />
+  <meta property="og:title" content="Product – Source77 Store" />
+  <meta property="og:description" content="Shop this item at Source77 Store in San Antonio, TX — inspected and condition-noted, with free local pickup or fast shipping." />
+  <meta property="og:url" content="https://source77llc.com/shop.html" />
+  <meta property="og:image" content="https://source77llc.com/images/item381-cleaned.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/css/main.css" />
   <style>
     .product-title-row { display: flex; align-items: flex-start; gap: 0.75rem; }
@@ -222,6 +231,49 @@
           });
         }
 
+        // Tap main photo to enlarge: full-size overlay. Tap anywhere (or the
+        // SEO: meta description, canonical, Open Graph + Product schema,
+        // set from the fetched product data (the static head tags above
+        // are fallbacks until the product loads).
+        (function () {
+          var pageUrl = 'https://source77llc.com/product.html?id=' + encodeURIComponent(product.id);
+          var desc = String(product.description || product.title || '').replace(/\s+/g, ' ').trim();
+          var metaDesc = desc ? desc.slice(0, 155) : (product.title + ' \u2013 Source77 Store');
+          function setMeta(sel, attr, val) {
+            var el = document.querySelector(sel);
+            if (el) el.setAttribute(attr, val);
+          }
+          setMeta('meta[name="description"]', 'content', metaDesc);
+          setMeta('link[rel="canonical"]', 'href', pageUrl);
+          setMeta('meta[property="og:title"]', 'content', product.title + ' \u2013 Source77 Store');
+          setMeta('meta[property="og:description"]', 'content', metaDesc);
+          setMeta('meta[property="og:url"]', 'content', pageUrl);
+          setMeta('meta[property="og:image"]', 'content', (imgs && imgs.length) ? imgs[0] : 'https://source77llc.com/images/item381-cleaned.jpg');
+          var old = document.getElementById('product-schema');
+          if (old) old.remove();
+          var schema = {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            description: product.description || product.title,
+            offers: {
+              '@type': 'Offer',
+              url: pageUrl,
+              priceCurrency: 'USD',
+              price: Number(product.price || 0).toFixed(2),
+              availability: (typeof product.quantity === 'number' && product.quantity <= 0)
+                ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+              itemCondition: 'https://schema.org/NewCondition',
+              seller: { '@type': 'Organization', name: 'Source77 LLC' }
+            }
+          };
+          if (imgs && imgs.length) schema.image = imgs;
+          var s = document.createElement('script');
+          s.id = 'product-schema';
+          s.type = 'application/ld+json';
+          s.textContent = JSON.stringify(schema);
+          document.head.appendChild(s);
+        })();
         // Tap main photo to enlarge: full-size overlay. Tap anywhere (or the
         // x, or Esc) to close; ‹ › steps through the photos.
         var lightbox = document.getElementById('lightbox');
