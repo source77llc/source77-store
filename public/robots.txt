@@ -1,0 +1,6 @@
+# Source77 Store — robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+Sitemap: https://source77llc.com/sitemap.xml
