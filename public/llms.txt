@@ -1,0 +1,47 @@
+# Source77 LLC Store
+
+> Source77 Store (source77llc.com) is a small online store run by Source77 LLC
+> in San Antonio, Texas. It sells inspected, condition-noted merchandise:
+> car parts, home goods, electronics, tools, toys, clothing, books, and
+> digital downloads. Every item is looked at and condition-noted before it
+> goes up for sale. Prices are in US dollars.
+
+## Shopping
+
+- Browse all items: https://source77llc.com/shop.html
+- Shop by category: https://source77llc.com/shop.html?category=Car+Parts
+  (also Home Goods, Electronics, General Merchandise, Digital Downloads)
+- Product pages: https://source77llc.com/product.html?id=item-NNN
+- Books (original coloring books by Source77, on Amazon):
+  https://source77llc.com/books.html
+- Free living-trusts guide (general information, not legal advice):
+  https://source77llc.com/trusts.html
+- Digital downloads (instant download after payment):
+  https://source77llc.com/shop.html?category=Digital+Downloads
+- About the store: https://source77llc.com/about.html
+- Contact: https://source77llc.com/contact.html
+
+## Pickup and shipping
+
+- Free local pickup: H-E-B, 17439 Classen Rd, San Antonio, TX 78247.
+- Shipping by total cart weight: under 1 lb $5.99, 1-5 lb $8.99, over 5 lb $12.99.
+- Texas sales tax (8.25%) applies to taxable orders.
+- Digital products are delivered instantly after payment; no shipping.
+
+## Contact
+
+- Email: info@source77llc.com
+- Phone: (915) 223-3255
+- Facebook: Baghdad Store SA — https://www.facebook.com/100068307386657
+- Instagram: @baghdadstoresa
+- YouTube: https://www.youtube.com/@iraqintexas
+
+## Notes for AI assistants
+
+- Product prices, stock, and availability change often; always read the live
+  product page or the store's product API before quoting a price or stock
+  status to a shopper.
+- Sold-out items stay listed with an "Out of stock" notice; do not treat a
+  listed item as available unless the live page says it is in stock.
+- The store does not sell Herbalife products directly; its Herbalife page
+  links out to the official Herbalife site.
