@@ -223,6 +223,7 @@
             '<li><a href="tel:+19152233255">(915) 223-3255</a></li>' +
             '<li>Pickup: H-E-B, 17439 Classen Rd, San Antonio, TX 78247</li>' +
             '<li><a href="https://www.youtube.com/@iraqintexas" target="_blank" rel="noopener">YouTube — @iraqintexas</a></li>' +
+'<li><a href="https://www.facebook.com/100068307386657" target="_blank" rel="noopener">Facebook — Baghdad Store SA</a></li>' +
           '</ul></div>' +
         '</div>' +
         '<p class="fine">Source77 LLC &nbsp;·&nbsp; San Antonio, TX &nbsp;·&nbsp; &copy; ' + year + ' Source77 LLC. All rights reserved.</p>' +
